@@ -71,6 +71,7 @@ public struct Lox {
         let tokens = scanner.scanTokens()
         
         // TODO: Make sure to check for errors. Consider returning the errors as well.
+        // Or do we even want to keep track of all the errors? As we are already reporting them. Maybe just a boolean?
         
         for token in tokens {
             print(token)
