@@ -8,10 +8,11 @@
 import Foundation
 
 public struct Lox {
-    enum ExecutionError: Error {
+    enum Error: Swift.Error {
         case invalidArgument
-        case unexpectedCharacter(UInt)
+        case unexpectedCharacter(Character, UInt)
         case untermindatedString(UInt)
+        case parsingFailure(Token, String)
         
         // TODO: Find correct exit codes.
         var exitCode: Int32 {
@@ -22,6 +23,8 @@ public struct Lox {
                 return 64
             case .untermindatedString:
                 return 64
+            case .parsingFailure:
+                return 64
             }
         }
         
@@ -29,10 +32,12 @@ public struct Lox {
             switch self {
             case .invalidArgument:
                 return "Error: Invalid argument."
-            case .unexpectedCharacter(let lineNumber):
-                return "Error: Unexpected character at line \(lineNumber)."
+            case .unexpectedCharacter(let character, let lineNumber):
+                return "Error: Unexpected character \"\(character)\" at line \(lineNumber)."
             case .untermindatedString(let lineNumber):
                 return "Error: Unterminated string at line \(lineNumber)."
+            case .parsingFailure(let token, let message):
+                return "Error: \(message) at line \(token.line)."
             }
         }
     }
@@ -49,7 +54,7 @@ public struct Lox {
             }
         } catch {
             print(error.localizedDescription)
-            exit((error as? ExecutionError)?.exitCode ?? 1)
+            exit((error as? Error)?.exitCode ?? 1)
         }
     }
     
@@ -68,13 +73,13 @@ public struct Lox {
 
     private static func run(_ source: String) {
         var scanner = Scanner(source: source)
-        let tokens = scanner.scanTokens()
+        let (hadError, tokens) = scanner.scanTokens()
         
-        // TODO: Make sure to check for errors. Consider returning the errors as well.
-        // Or do we even want to keep track of all the errors? As we are already reporting them. Maybe just a boolean?
+        var parser = Parser(tokens: tokens)
+        let expression = parser.parse()
         
-        for token in tokens {
-            print(token)
-        }
+        guard !hadError, let expression else { return }
+        
+        print(ASTPrinter().print(expression))
     }
 }

@@ -20,7 +20,7 @@ struct Scanner {
         currentIndex >= source.endIndex
     }
     
-    var errors: [Lox.ExecutionError] = []
+    var hadError = false
     
     init(source: String) {
         self.source = source
@@ -28,14 +28,14 @@ struct Scanner {
         self.currentIndex = source.startIndex
     }
     
-    mutating func scanTokens() -> [Token] {
+    mutating func scanTokens() -> (Bool, [Token]) {
         while !isAtEnd {
             startIndex = currentIndex
             scanToken()
         }
         
         tokens.append(Token(type: .eof, lexeme: "", literal: nil, line: line))
-        return tokens
+        return (hadError, tokens)
     }
     
     mutating func scanToken() {
@@ -65,6 +65,7 @@ struct Scanner {
             }
         case " ", "\r", "\t": break // Ignore whitespace.
         case "\n": line += 1
+        case "\"": string()
         default:
             if isDigit(character) {
                 number()
@@ -72,8 +73,8 @@ struct Scanner {
                 identifier()
             } else {
                 // Instead of throwing the error, we keep scanning, as there might be more errors.
-                let error: Lox.ExecutionError = .unexpectedCharacter(line)
-                errors.append(error)
+                let error: Lox.Error = .unexpectedCharacter(character, line)
+                hadError = true
                 print(error.localizedDescription)
             }
         }
@@ -131,8 +132,8 @@ struct Scanner {
         }
         
         if isAtEnd {
-            let error: Lox.ExecutionError = .untermindatedString(line)
-            errors.append(error)
+            let error: Lox.Error = .untermindatedString(line)
+            hadError = true
             print(error.localizedDescription)
             return
         }
