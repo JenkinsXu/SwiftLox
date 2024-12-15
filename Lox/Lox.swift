@@ -80,6 +80,11 @@ public struct Lox {
         
         guard !hadError, let expression else { return }
         
-        print(ASTPrinter().print(expression))
+        do {
+            try Interpreter().interpret(expression)
+        } catch {
+            print(error.localizedDescription)
+            exit((error as? Interpreter.RuntimeError)?.exitCode ?? 1)
+        }
     }
 }
