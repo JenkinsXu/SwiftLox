@@ -7,6 +7,23 @@
 
 /// There is no place in the grammar where both an expression and a statement are allowed.
 /// Since the two syntaxes are disjoint, we don't need a single base class that they all inherit from.
+///
+/// ```
+/// program        → declaration* EOF ;
+///
+/// // requires this distinction because
+/// // if (monday) var beverage = "espresso"; // invalid, confusing scope
+/// declaration    → varDecl
+///                | statement ; // the "higer" precedence statements, allowed in more places (fallthrough)
+///
+/// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+///
+/// statement      → exprStmt
+///                | printStmt ;
+///
+/// exprStmt       → expression ";" ;
+/// printStmt      → "print" expression ";" ;
+/// ```
 protocol Statement { // Commonly written as "Stmt"
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws
 }

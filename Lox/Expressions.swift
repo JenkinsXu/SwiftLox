@@ -5,6 +5,8 @@
 //  Created by Yongqi Xu on 2024-12-06.
 //
 
+/// Properties of an expressions are what evaluators need to produce a value.
+///
 /// ```
 /// expression     → literal
 ///                | unary

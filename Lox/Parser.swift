@@ -15,7 +15,7 @@
 /// unary          → ( "!" | "-" ) unary
 ///                | primary ;
 /// primary        → NUMBER | STRING | "true" | "false" | "nil"
-///                | "(" expression ")" ;
+///                | "(" expression ")" | IDENTIFIER ;
 /// ```
 ///
 /// Goals of error handling (achieved with synchronization):
@@ -41,21 +41,34 @@ struct Parser {
         var statements = [Statement]()
         while !isAtEnd {
             do {
-                statements.append(try statement())
+                statements.append(try declaration())
             } catch {
-                // synchronize()
+                // Went into panic mode. Get back to trying to parse the next statement.
+                synchronize()
             }
         }
         
         return statements.isEmpty ? nil : statements
     }
     
+    private mutating func declaration() throws -> Statement {
+        return match(.var) ? try varDeclaration() : try statement()
+    }
+    
     private mutating func statement() throws -> Statement {
-        if match(.print) {
-            return try printStatement()
-        } else {
-            return try expressionStatement()
+        return match(.print) ? try printStatement() : try expressionStatement()
+    }
+    
+    private mutating func varDeclaration() throws -> Statement {
+        let name = try consume(.identifier, messageIfFailed: "Expect variable name.")
+        
+        var initializer: Expression?
+        if match(.equal) {
+            initializer = try expression()
         }
+        
+        try consume(.semicolon, messageIfFailed: "Expect ';' after variable declaration.")
+        return VarStatement(name: name, initializer: initializer)
     }
     
     private mutating func printStatement() throws(Lox.Error) -> PrintStatement {
@@ -182,6 +195,10 @@ struct Parser {
         
         if match(.number, .string) {
             return Literal(value: previous().literal)
+        }
+        
+        if match(.identifier) {
+            return Variable(name: previous())
         }
         
         if match(.leftParen) {
