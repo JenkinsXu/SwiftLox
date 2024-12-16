@@ -25,19 +25,19 @@
 /// printStmt      → "print" expression ";" ;
 /// ```
 protocol Statement { // Commonly written as "Stmt"
-    func accept<V: StatementThrowingVisitor>(_ visitor: inout V) throws
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws
 }
 
 protocol StatementThrowingVisitor {
     func visitExpressionStatement(_ statement: ExpressionStatement) throws
     func visitPrintStatement(_ statement: PrintStatement) throws
-    mutating func visitVarStatement(_ statement: VarStatement) throws
+    func visitVarStatement(_ statement: VarStatement) throws
 }
 
 struct ExpressionStatement: Statement {
     let expression: Expression
     
-    func accept<V: StatementThrowingVisitor>(_ visitor: inout V) throws {
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitExpressionStatement(self)
     }
 }
@@ -45,7 +45,7 @@ struct ExpressionStatement: Statement {
 struct PrintStatement: Statement {
     let expression: Expression
     
-    func accept<V: StatementThrowingVisitor>(_ visitor: inout V) throws {
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitPrintStatement(self)
     }
 }
@@ -54,7 +54,7 @@ struct VarStatement: Statement {
     let name: Token
     let initializer: Expression?
     
-    func accept<V: StatementThrowingVisitor>(_ visitor: inout V) throws {
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitVarStatement(self)
     }
 }

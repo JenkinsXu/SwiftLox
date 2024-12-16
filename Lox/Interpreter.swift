@@ -6,7 +6,7 @@
 //
 
 /// Does a post-order traversal - each node evaluates its children before doing its own work.
-struct Interpreter {
+class Interpreter {
     private var environment = Environment()
     
     struct RuntimeError: Error {
@@ -19,14 +19,14 @@ struct Interpreter {
         }
     }
     
-    mutating func interpret(_ statements: [Statement]) throws {
+    func interpret(_ statements: [Statement]) throws {
         for statement in statements {
             try execute(statement)
         }
     }
     
-    private mutating func execute(_ statement: Statement) throws {
-        try statement.accept(&self)
+    private func execute(_ statement: Statement) throws {
+        try statement.accept(self)
     }
     
     private func stringify(_ value: Any?) -> String {
@@ -129,6 +129,12 @@ extension Interpreter: ExpressionThrowingVisitor {
         return try environment.get(variable.name)
     }
     
+    func visitAssign(_ assign: Assign) throws -> Output {
+        let value = try evaluate(assign.value)
+        try environment.assign(assign.name, value)
+        return value
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {
@@ -182,7 +188,7 @@ extension Interpreter: StatementThrowingVisitor {
         print(stringify(value))
     }
     
-    mutating func visitVarStatement(_ statement: VarStatement) throws {
+    func visitVarStatement(_ statement: VarStatement) throws {
         var value: Any? = nil
         if let initializer = statement.initializer {
             value = try evaluate(initializer)

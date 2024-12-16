@@ -32,6 +32,7 @@ protocol ExpressionVisitor { // For grouping functionalities together
     func visitLiteral(_ literal: Literal) -> Output
     func visitUnary(_ unary: Unary) -> Output
     func visitVariable(_ variable: Variable) -> Output
+    func visitAssign(_ assign: Assign) -> Output
 }
 
 protocol ExpressionThrowingVisitor {
@@ -41,6 +42,20 @@ protocol ExpressionThrowingVisitor {
     func visitLiteral(_ literal: Literal) throws -> Output
     func visitUnary(_ unary: Unary) throws -> Output
     func visitVariable(_ variable: Variable) throws -> Output
+    func visitAssign(_ assign: Assign) throws -> Output
+}
+
+struct Assign: Expression {
+    let name: Token
+    let value: Expression
+    
+    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+        visitor.visitAssign(self)
+    }
+    
+    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+        try visitor.visitAssign(self)
+    }
 }
 
 struct Binary: Expression {

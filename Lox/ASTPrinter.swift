@@ -44,4 +44,8 @@ struct ASTPrinter: ExpressionVisitor {
     func visitVariable(_ variable: Variable) -> String {
         variable.name.lexeme
     }
+    
+    func visitAssign(_ assign: Assign) -> String {
+        parenthesize("assign \(assign.name.lexeme)", assign.value)
+    }
 }

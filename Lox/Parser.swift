@@ -7,7 +7,9 @@
 
 // Just like a scanner, but a parser reads tokens instead.
 /// ```
-/// expression     → equality ;
+/// expression     → assignment ;
+/// assignment     → IDENTIFIER "=" assignment
+///                | equality ;
 /// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 /// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 /// term           → factor ( ( "-" | "+" ) factor )* ;
@@ -120,7 +122,30 @@ struct Parser {
     }
     
     private mutating func expression() throws(Lox.Error) -> Expression {
-        return try equality()
+        return try assignment()
+    }
+    
+    private mutating func assignment() throws(Lox.Error) -> Expression {
+        // The left-hand side of the assignment isn't an expression that evaluates to a value. We don't evaluate `a` in `a = 1`.
+        // Other expressions produce r-values.
+        // An l-value "evaluates" to a storage location that you can assign to.
+        // A single token of lookahead is not enough for cases like
+        // `makeList().head.next = node;`
+        let expression = try equality()
+        
+        if match(.equal) {
+            let equals = previous()
+            let value = try assignment() // Right-associative.
+            
+            if let variable = expression as? Variable {
+                let name = variable.name // Convert r-value to l-value.
+                return Assign(name: name, value: value)
+            }
+            
+            throw .parsingFailure(equals, "Invalid assignment target.")
+        }
+        
+        return expression
     }
     
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;

@@ -26,4 +26,12 @@ struct Environment {
             values[name] = value
         }
     }
+    
+    mutating func assign(_ name: Token, _ value: Any?) throws {
+        if values.keys.contains(name.lexeme) {
+            values[name.lexeme] = value
+        } else {
+            throw Interpreter.RuntimeError(token: name, message: "Undefined variable \"\(name.lexeme)\".")
+        }
+    }
 }
