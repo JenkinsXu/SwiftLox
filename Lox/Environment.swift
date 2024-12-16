@@ -5,12 +5,19 @@
 //  Created by Yongqi Xu on 2024-12-16.
 //
 
-struct Environment {
+class Environment {
+    var enclosing: Environment? // Parent-pointer tree.
     private var values: [String: Any?] = [:]
+    
+    init(enclosing: Environment? = nil) {
+        self.enclosing = enclosing
+    }
     
     func get(_ name: Token) throws -> Any? {
         if let value = values[name.lexeme] {
             return value
+        } else if let enclosing {
+            return try enclosing.get(name)
         } else {
             // Note: It should not be a static syntax error because
             // using a variable isn't the same as referring to it.
@@ -19,7 +26,7 @@ struct Environment {
         }
     }
     
-    mutating func define(_ name: String, _ value: Any?) {
+    func define(_ name: String, _ value: Any?) {
         if value == nil {
             values[name] = Any?.none // Directly setting nil will remove the key.
         } else {
@@ -27,9 +34,11 @@ struct Environment {
         }
     }
     
-    mutating func assign(_ name: Token, _ value: Any?) throws {
+    func assign(_ name: Token, _ value: Any?) throws {
         if values.keys.contains(name.lexeme) {
             values[name.lexeme] = value
+        } else if let enclosing {
+            try enclosing.assign(name, value)
         } else {
             throw Interpreter.RuntimeError(token: name, message: "Undefined variable \"\(name.lexeme)\".")
         }
