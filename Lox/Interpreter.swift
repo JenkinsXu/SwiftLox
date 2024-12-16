@@ -19,9 +19,14 @@ struct Interpreter: ExpressionThrowingVisitor {
         }
     }
     
-    func interpret(_ expression: Expression) throws {
-        let value = try evaluate(expression)
-        print(stringify(value))
+    func interpret(_ statements: [Statement]) throws {
+        for statement in statements {
+            try execute(statement)
+        }
+    }
+    
+    private func execute(_ statement: Statement) throws {
+        try statement.accept(self)
     }
     
     private func stringify(_ value: Any?) -> String {
@@ -46,7 +51,7 @@ struct Interpreter: ExpressionThrowingVisitor {
         try evaluate(grouping.expression)
     }
     
-    func visitUnary(_ unary: Unary) throws -> Any? {
+    func visitUnary(_ unary: Unary) throws -> Output {
         let right = try evaluate(unary.right)
         switch unary.operator.type {
         case .minus:
@@ -61,7 +66,7 @@ struct Interpreter: ExpressionThrowingVisitor {
         return nil
     }
     
-    func visitBinary(_ binary: Binary) throws -> Any? {
+    func visitBinary(_ binary: Binary) throws -> Output {
         let left = try evaluate(binary.left)
         let right = try evaluate(binary.right)
         
@@ -132,6 +137,7 @@ struct Interpreter: ExpressionThrowingVisitor {
         return lhs.isEqual(to: rhs)
     }
     
+    @discardableResult
     private func evaluate(_ expression: Expression) throws -> Any? {
         try expression.accept(self)
     }
@@ -149,5 +155,16 @@ fileprivate extension Equatable {
     func isEqual(to other: any Equatable) -> Bool {
         guard let other = other as? Self else { return false }
         return self == other
+    }
+}
+
+extension Interpreter: StatementThrowingVisitor {
+    func visitExpressionStatement(_ statement: ExpressionStatement) throws {
+        try evaluate(statement.expression)
+    }
+    
+    func visitPrintStatement(_ statement: PrintStatement) throws {
+        let value = try evaluate(statement.expression)
+        print(stringify(value))
     }
 }

@@ -37,8 +37,37 @@ struct Parser {
         self.tokens = tokens
     }
     
-    mutating func parse() -> Expression? {
-        return try? expression()
+    mutating func parse() -> [Statement]? {
+        var statements = [Statement]()
+        while !isAtEnd {
+            do {
+                statements.append(try statement())
+            } catch {
+                // synchronize()
+            }
+        }
+        
+        return statements.isEmpty ? nil : statements
+    }
+    
+    private mutating func statement() throws -> Statement {
+        if match(.print) {
+            return try printStatement()
+        } else {
+            return try expressionStatement()
+        }
+    }
+    
+    private mutating func printStatement() throws(Lox.Error) -> PrintStatement {
+        let value = try expression()
+        try consume(.semicolon, messageIfFailed: "Expect ';' after value.")
+        return PrintStatement(expression: value)
+    }
+    
+    private mutating func expressionStatement() throws(Lox.Error) -> ExpressionStatement {
+        let value = try expression()
+        try consume(.semicolon, messageIfFailed: "Expect ';' after expression.")
+        return ExpressionStatement(expression: value)
     }
     
     /// Check for the current token type and advance if it matches any of the types.

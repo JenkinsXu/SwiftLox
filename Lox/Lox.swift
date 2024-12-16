@@ -76,12 +76,12 @@ public struct Lox {
         let (hadError, tokens) = scanner.scanTokens()
         
         var parser = Parser(tokens: tokens)
-        let expression = parser.parse()
+        let statements = parser.parse()
         
-        guard !hadError, let expression else { return }
+        guard !hadError, let statements else { return }
         
         do {
-            try Interpreter().interpret(expression)
+            try Interpreter().interpret(statements)
         } catch {
             print(error.localizedDescription)
             exit((error as? Interpreter.RuntimeError)?.exitCode ?? 1)
