@@ -19,9 +19,11 @@
 /// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 ///
 /// statement      → exprStmt
+///                | ifStmt
 ///                | printStmt
 ///                | block ;
 ///
+/// ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 /// block          → "{" declaration* "}" ;
 /// exprStmt       → expression ";" ;
 /// printStmt      → "print" expression ";" ;
@@ -35,6 +37,7 @@ protocol StatementThrowingVisitor {
     func visitPrintStatement(_ statement: PrintStatement) throws
     func visitVarStatement(_ statement: VarStatement) throws
     func visitBlock(_ block: Block) throws
+    func visitIfStatement(_ statement: IfStatement) throws
 }
 
 struct Block: Statement {
@@ -52,6 +55,16 @@ struct ExpressionStatement: Statement {
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitExpressionStatement(self)
+    }
+}
+
+struct IfStatement: Statement {
+    let condition: Expression
+    let thenBranch: Statement
+    let elseBranch: Statement?
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        try visitor.visitIfStatement(self)
     }
 }
 

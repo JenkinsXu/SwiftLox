@@ -60,6 +60,7 @@ struct Parser {
     private mutating func statement() throws(Lox.Error) -> Statement {
         if match(.print) { return try printStatement() }
         if match(.leftBrace) { return try block() }
+        if match(.if) { return try ifStatement() }
         return try expressionStatement()
     }
     
@@ -79,6 +80,21 @@ struct Parser {
         let value = try expression()
         try consume(.semicolon, messageIfFailed: "Expect ';' after value.")
         return PrintStatement(expression: value)
+    }
+    
+    private mutating func ifStatement() throws(Lox.Error) -> IfStatement {
+        try consume(.leftParen, messageIfFailed: "Expect '(' after 'if'.")
+        let condition = try expression()
+        try consume(.rightParen, messageIfFailed: "Expect ')' after if condition.")
+        
+        let thenBranch = try statement()
+        var elseBranch: Statement?
+        if match(.else) {
+            // The else is bound to the nearest if that precedes it to avoid the dangling else problem.
+            elseBranch = try statement()
+        }
+        
+        return IfStatement(condition: condition, thenBranch: thenBranch, elseBranch: elseBranch)
     }
     
     private mutating func block() throws(Lox.Error) -> Block {

@@ -213,4 +213,12 @@ extension Interpreter: StatementThrowingVisitor {
             try execute(statement)
         }
     }
+    
+    func visitIfStatement(_ statement: IfStatement) throws {
+        if isTruthy(try evaluate(statement.condition)) {
+            try execute(statement.thenBranch)
+        } else if let elseBranch = statement.elseBranch {
+            try execute(elseBranch)
+        }
+    }
 }
