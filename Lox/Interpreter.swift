@@ -9,6 +9,8 @@
 struct Interpreter: ExpressionThrowingVisitor {
     typealias Output = Any?
     
+    private var environment = Environment()
+    
     struct RuntimeError: Error {
         let token: Token
         let message: String
@@ -19,14 +21,14 @@ struct Interpreter: ExpressionThrowingVisitor {
         }
     }
     
-    func interpret(_ statements: [Statement]) throws {
+    mutating func interpret(_ statements: [Statement]) throws {
         for statement in statements {
             try execute(statement)
         }
     }
     
-    private func execute(_ statement: Statement) throws {
-        try statement.accept(self)
+    private mutating func execute(_ statement: Statement) throws {
+        try statement.accept(&self)
     }
     
     private func stringify(_ value: Any?) -> String {
@@ -114,6 +116,10 @@ struct Interpreter: ExpressionThrowingVisitor {
         return nil
     }
     
+    func visitVariable(_ variable: Variable) throws -> Output {
+        return try environment.get(variable.name)
+    }
+    
     private func numberOperand(operator: Token, value: Any?) throws -> Double {
         guard let value = value as? Double else {
             throw RuntimeError(token: `operator`, message: "Operand must be a number.")
@@ -166,5 +172,17 @@ extension Interpreter: StatementThrowingVisitor {
     func visitPrintStatement(_ statement: PrintStatement) throws {
         let value = try evaluate(statement.expression)
         print(stringify(value))
+    }
+    
+    mutating func visitVarStatement(_ statement: VarStatement) throws {
+        var value: Any? = nil
+        if let initializer = statement.initializer {
+            value = try evaluate(initializer)
+        }
+        
+        // This makes the following possible
+        // var a;
+        // print a; // nil
+        environment.define(statement.name.lexeme, value)
     }
 }

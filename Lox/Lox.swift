@@ -8,6 +8,8 @@
 import Foundation
 
 public struct Lox {
+    private static var interpreter = Interpreter()
+    
     enum Error: Swift.Error {
         case invalidArgument
         case unexpectedCharacter(Character, UInt)
@@ -81,7 +83,7 @@ public struct Lox {
         guard !hadError, let statements else { return }
         
         do {
-            try Interpreter().interpret(statements)
+            try interpreter.interpret(statements)
         } catch {
             print(error.localizedDescription)
             exit((error as? Interpreter.RuntimeError)?.exitCode ?? 1)

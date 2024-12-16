@@ -40,4 +40,8 @@ struct ASTPrinter: ExpressionVisitor {
     func visitUnary(_ unary: Unary) -> String {
         parenthesize(unary.operator.lexeme, unary.right)
     }
+    
+    func visitVariable(_ variable: Variable) -> String {
+        variable.name.lexeme
+    }
 }
