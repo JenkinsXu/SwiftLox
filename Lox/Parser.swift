@@ -10,6 +10,8 @@
 /// expression     → assignment ;
 /// assignment     → IDENTIFIER "=" assignment
 ///                | equality ;
+/// logical_or     → logical_and ( "or" logical_and )* ;
+/// logical_and    → equality ( "and" equality )* ;
 /// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 /// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 /// term           → factor ( ( "-" | "+" ) factor )* ;
@@ -160,7 +162,7 @@ struct Parser {
         // An l-value "evaluates" to a storage location that you can assign to.
         // A single token of lookahead is not enough for cases like
         // `makeList().head.next = node;`
-        let expression = try equality()
+        let expression = try logicalOr()
         
         if match(.equal) {
             let equals = previous()
@@ -172,6 +174,30 @@ struct Parser {
             }
             
             throw .parsingFailure(equals, "Invalid assignment target.")
+        }
+        
+        return expression
+    }
+    
+    private mutating func logicalOr() throws(Lox.Error) -> Expression {
+        var expression = try logicalAnd()
+        
+        while match(.or) {
+            let `operator` = previous()
+            let right = try logicalAnd()
+            expression = Logical(left: expression, operator: `operator`, right: right)
+        }
+        
+        return expression
+    }
+    
+    private mutating func logicalAnd() throws(Lox.Error) -> Expression {
+        var expression = try equality()
+        
+        while match(.and) {
+            let `operator` = previous()
+            let right = try equality()
+            expression = Logical(left: expression, operator: `operator`, right: right)
         }
         
         return expression

@@ -135,6 +135,23 @@ extension Interpreter: ExpressionThrowingVisitor {
         return value
     }
     
+    func visitLogical(_ logical: Logical) throws -> Output {
+        let left = try evaluate(logical.left)
+        
+        // Short-circuiting
+        if logical.operator.type == .or {
+            if isTruthy(left) {
+                return left
+            }
+        } else {
+            if !isTruthy(left) {
+                return left
+            }
+        }
+        
+        return try evaluate(logical.right)
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {
