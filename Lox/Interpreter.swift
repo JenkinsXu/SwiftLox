@@ -199,4 +199,18 @@ extension Interpreter: StatementThrowingVisitor {
         // print a; // nil
         environment.define(statement.name.lexeme, value)
     }
+    
+    func visitBlock(_ block: Block) throws {
+        try executeBlock(block.statements, Environment(enclosing: self.environment))
+    }
+    
+    private func executeBlock(_ statements: [Statement], _ environment: Environment) throws {
+        let previous = self.environment
+        defer { self.environment = previous }
+        
+        self.environment = environment
+        for statement in statements {
+            try execute(statement)
+        }
+    }
 }

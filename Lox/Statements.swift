@@ -19,8 +19,10 @@
 /// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 ///
 /// statement      → exprStmt
-///                | printStmt ;
+///                | printStmt
+///                | block ;
 ///
+/// block          → "{" declaration* "}" ;
 /// exprStmt       → expression ";" ;
 /// printStmt      → "print" expression ";" ;
 /// ```
@@ -32,6 +34,17 @@ protocol StatementThrowingVisitor {
     func visitExpressionStatement(_ statement: ExpressionStatement) throws
     func visitPrintStatement(_ statement: PrintStatement) throws
     func visitVarStatement(_ statement: VarStatement) throws
+    func visitBlock(_ block: Block) throws
+}
+
+struct Block: Statement {
+    let statements: [Statement]
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        for statement in statements {
+            try statement.accept(visitor)
+        }
+    }
 }
 
 struct ExpressionStatement: Statement {

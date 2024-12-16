@@ -53,15 +53,17 @@ struct Parser {
         return statements.isEmpty ? nil : statements
     }
     
-    private mutating func declaration() throws -> Statement {
+    private mutating func declaration() throws(Lox.Error) -> Statement {
         return match(.var) ? try varDeclaration() : try statement()
     }
     
-    private mutating func statement() throws -> Statement {
-        return match(.print) ? try printStatement() : try expressionStatement()
+    private mutating func statement() throws(Lox.Error) -> Statement {
+        if match(.print) { return try printStatement() }
+        if match(.leftBrace) { return try block() }
+        return try expressionStatement()
     }
     
-    private mutating func varDeclaration() throws -> Statement {
+    private mutating func varDeclaration() throws(Lox.Error) -> Statement {
         let name = try consume(.identifier, messageIfFailed: "Expect variable name.")
         
         var initializer: Expression?
@@ -77,6 +79,17 @@ struct Parser {
         let value = try expression()
         try consume(.semicolon, messageIfFailed: "Expect ';' after value.")
         return PrintStatement(expression: value)
+    }
+    
+    private mutating func block() throws(Lox.Error) -> Block {
+        var statements = [Statement]()
+        
+        while !check(.rightBrace) && !isAtEnd {
+            statements.append(try declaration())
+        }
+        
+        try consume(.rightBrace, messageIfFailed: "Expect '}' after block.")
+        return Block(statements: statements)
     }
     
     private mutating func expressionStatement() throws(Lox.Error) -> ExpressionStatement {
