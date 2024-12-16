@@ -6,9 +6,7 @@
 //
 
 /// Does a post-order traversal - each node evaluates its children before doing its own work.
-struct Interpreter: ExpressionThrowingVisitor {
-    typealias Output = Any?
-    
+struct Interpreter {
     private var environment = Environment()
     
     struct RuntimeError: Error {
@@ -44,6 +42,17 @@ struct Interpreter: ExpressionThrowingVisitor {
         
         return "\(value)"
     }
+    
+    @discardableResult
+    private func evaluate(_ expression: Expression) throws -> Any? {
+        try expression.accept(self)
+    }
+}
+
+// MARK: - Expressions
+
+extension Interpreter: ExpressionThrowingVisitor {
+    typealias Output = Any?
     
     func visitLiteral(_ literal: Literal) throws -> Output {
         literal.value
@@ -120,6 +129,8 @@ struct Interpreter: ExpressionThrowingVisitor {
         return try environment.get(variable.name)
     }
     
+    // MARK: Helpers
+    
     private func numberOperand(operator: Token, value: Any?) throws -> Double {
         guard let value = value as? Double else {
             throw RuntimeError(token: `operator`, message: "Operand must be a number.")
@@ -143,11 +154,6 @@ struct Interpreter: ExpressionThrowingVisitor {
         return lhs.isEqual(to: rhs)
     }
     
-    @discardableResult
-    private func evaluate(_ expression: Expression) throws -> Any? {
-        try expression.accept(self)
-    }
-    
     /// Lox follows Ruby's rule: only `false` and `nil` are falsey.
     private func isTruthy(_ value: Any?) -> Bool {
         if let value = value as? Bool {
@@ -163,6 +169,8 @@ fileprivate extension Equatable {
         return self == other
     }
 }
+
+// MARK: - Statements
 
 extension Interpreter: StatementThrowingVisitor {
     func visitExpressionStatement(_ statement: ExpressionStatement) throws {
