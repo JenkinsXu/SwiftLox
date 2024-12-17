@@ -58,16 +58,36 @@ struct Parser {
     }
     
     private mutating func declaration() throws(Lox.Error) -> Statement {
-        return match(.var) ? try varDeclaration() : try statement()
+        if match(.fun) { return try functionDeclaration(ofKind: "function") }
+        if match(.var) { return try varDeclaration() }
+        return try statement()
     }
     
     private mutating func statement() throws(Lox.Error) -> Statement {
         if match(.print) { return try printStatement() }
-        if match(.leftBrace) { return try block() }
+        if match(.leftBrace) { return Block(statements: try block()) }
         if match(.if) { return try ifStatement() }
         if match(.while) { return try whileStatement() }
         if match(.for) { return try forStatement() }
         return try expressionStatement()
+    }
+    
+    private mutating func functionDeclaration(ofKind kind: String) throws(Lox.Error) -> Statement {
+        let name = try consume(.identifier, messageIfFailed: "Expect \(kind) name.")
+        var parameters = [Token]()
+        if !check(.rightParen) {
+            repeat {
+                if parameters.count >= 255 {
+                    throw .parsingFailure(peek(), "Cannot have more than 255 parameters.")
+                }
+                parameters.append(try consume(.identifier, messageIfFailed: "Expect parameter name."))
+            } while match(.comma)
+        }
+        try consume(.rightParen, messageIfFailed: "Expect ')' after parameters.")
+        
+        try consume(.leftBrace, messageIfFailed: "Expect '{' before \(kind) body.") // block() assumes that the left brace has been consumed.
+        let body = try block()
+        return FunctionStatement(name: name, parameters: parameters, body: body)
     }
     
     private mutating func varDeclaration() throws(Lox.Error) -> Statement {
@@ -157,7 +177,7 @@ struct Parser {
         return body
     }
     
-    private mutating func block() throws(Lox.Error) -> Block {
+    private mutating func block() throws(Lox.Error) -> [Statement] {
         var statements = [Statement]()
         
         while !check(.rightBrace) && !isAtEnd {
@@ -165,7 +185,7 @@ struct Parser {
         }
         
         try consume(.rightBrace, messageIfFailed: "Expect '}' after block.")
-        return Block(statements: statements)
+        return statements
     }
     
     private mutating func expressionStatement() throws(Lox.Error) -> ExpressionStatement {

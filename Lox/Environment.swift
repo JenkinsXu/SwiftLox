@@ -9,7 +9,7 @@ class Environment {
     var enclosing: Environment? // Parent-pointer tree.
     private var values: [String: Any?] = [:]
     
-    init(enclosing: Environment? = nil) {
+    init(enclosedBy enclosing: Environment? = nil) {
         self.enclosing = enclosing
     }
     

@@ -13,8 +13,13 @@
 ///
 /// // requires this distinction because
 /// // if (monday) var beverage = "espresso"; // invalid, confusing scope
-/// declaration    → varDecl
+/// declaration    → funDecl
+///                | varDecl ;
 ///                | statement ; // the "higer" precedence statements, allowed in more places (fallthrough)
+///
+/// funDecl        → "fun" function ;
+/// function       → IDENTIFIER "(" parameters? ")" block ; // reused in class methods
+/// parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 ///
 /// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 ///
@@ -39,6 +44,7 @@ protocol Statement { // Commonly written as "Stmt"
 protocol StatementThrowingVisitor {
     func visitExpressionStatement(_ statement: ExpressionStatement) throws
     func visitPrintStatement(_ statement: PrintStatement) throws
+    func visitFunctionStatement(_ statement: FunctionStatement) throws
     func visitVarStatement(_ statement: VarStatement) throws
     func visitBlock(_ block: Block) throws
     func visitIfStatement(_ statement: IfStatement) throws
@@ -78,6 +84,17 @@ struct PrintStatement: Statement {
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitPrintStatement(self)
+    }
+}
+
+/// This is a syntax structure. For runtime, see `LoxFunction`.
+struct FunctionStatement: Statement {
+    let name: Token
+    let parameters: [Token]
+    let body: [Statement]
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        try visitor.visitFunctionStatement(self)
     }
 }
 

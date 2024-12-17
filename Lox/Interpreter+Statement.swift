@@ -28,10 +28,10 @@ extension Interpreter: StatementThrowingVisitor {
     }
     
     func visitBlock(_ block: Block) throws {
-        try executeBlock(block.statements, Environment(enclosing: self.environment))
+        try executeBlock(block.statements, Environment(enclosedBy: self.environment))
     }
     
-    private func executeBlock(_ statements: [Statement], _ environment: Environment) throws {
+    func executeBlock(_ statements: [Statement], _ environment: Environment) throws {
         let previous = self.environment
         defer { self.environment = previous }
         
@@ -53,5 +53,9 @@ extension Interpreter: StatementThrowingVisitor {
         while isTruthy(try evaluate(statement.condition)) {
             try execute(statement.body)
         }
+    }
+    
+    func visitFunctionStatement(_ statement: FunctionStatement) throws {
+        <#code#>
     }
 }
