@@ -6,20 +6,6 @@
 //
 
 /// Properties of an expressions are what evaluators need to produce a value.
-///
-/// ```
-/// expression     → literal
-///                | unary
-///                | binary
-///                | grouping ;
-///
-/// literal        → NUMBER | STRING | "true" | "false" | "nil" ;
-/// grouping       → "(" expression ")" ;
-/// unary          → ( "-" | "!" ) expression ;
-/// binary         → expression operator expression ;
-/// operator       → "==" | "!=" | "<" | "<=" | ">" | ">="
-///                | "+"  | "-"  | "*" | "/" ;
-/// ```
 protocol Expression {
     func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output
     func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output
@@ -34,6 +20,7 @@ protocol ExpressionVisitor { // For grouping functionalities together
     func visitVariable(_ variable: Variable) -> Output
     func visitAssign(_ assign: Assign) -> Output
     func visitLogical(_ logical: Logical) -> Output
+    func visitCall(_ call: Call) -> Output
 }
 
 protocol ExpressionThrowingVisitor {
@@ -45,6 +32,7 @@ protocol ExpressionThrowingVisitor {
     func visitVariable(_ variable: Variable) throws -> Output
     func visitAssign(_ assign: Assign) throws -> Output
     func visitLogical(_ logical: Logical) throws -> Output
+    func visitCall(_ call: Call) throws -> Output
 }
 
 struct Assign: Expression {
@@ -135,5 +123,19 @@ struct Variable: Expression {
     
     func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitVariable(self)
+    }
+}
+
+struct Call: Expression {
+    let callee: Expression
+    let paren: Token // Token for the closing parenthesis. Used for error reporting.
+    let arguments: [Expression]
+    
+    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+        visitor.visitCall(self)
+    }
+    
+    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+        try visitor.visitCall(self)
     }
 }

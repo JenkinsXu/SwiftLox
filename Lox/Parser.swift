@@ -17,7 +17,9 @@
 /// term           → factor ( ( "-" | "+" ) factor )* ;
 /// factor         → unary ( ( "/" | "*" ) unary )* ;
 /// unary          → ( "!" | "-" ) unary
-///                | primary ;
+///                | call ;
+/// call           → primary ( "(" arguments? ")" )* ;
+/// arguments      → expression ( "," expression )* ;
 /// primary        → NUMBER | STRING | "true" | "false" | "nil"
 ///                | "(" expression ")" | IDENTIFIER ;
 /// ```
@@ -315,7 +317,36 @@ struct Parser {
             return Unary(operator: `operator`, right: right)
         }
         
-        return try primary()
+        return try call()
+    }
+    
+    private mutating func call() throws(Lox.Error) -> Expression {
+        var expression = try primary() // The callee initially.
+        
+        while true {
+            if match(.leftParen) {
+                expression = try finishCall(expression)
+            } else {
+                break
+            }
+        }
+        
+        return expression
+    }
+    
+    private mutating func finishCall(_ callee: Expression) throws(Lox.Error) -> Expression {
+        var arguments = [Expression]()
+        if !check(.rightParen) {
+            repeat {
+                if arguments.count >= 255 {
+                    throw .parsingFailure(peek(), "Cannot have more than 255 arguments.")
+                }
+                arguments.append(try expression())
+            } while match(.comma)
+        }
+        
+        let paren = try consume(.rightParen, messageIfFailed: "Expect ')' after arguments.")
+        return Call(callee: callee, paren: paren, arguments: arguments)
     }
     
     private mutating func primary() throws(Lox.Error) -> Expression {
