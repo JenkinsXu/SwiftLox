@@ -63,6 +63,7 @@ struct Parser {
         if match(.print) { return try printStatement() }
         if match(.leftBrace) { return try block() }
         if match(.if) { return try ifStatement() }
+        if match(.while) { return try whileStatement() }
         return try expressionStatement()
     }
     
@@ -97,6 +98,15 @@ struct Parser {
         }
         
         return IfStatement(condition: condition, thenBranch: thenBranch, elseBranch: elseBranch)
+    }
+    
+    private mutating func whileStatement() throws(Lox.Error) -> WhileStatement {
+        try consume(.leftParen, messageIfFailed: "Expect '(' after 'while'.")
+        let condition = try expression()
+        try consume(.rightParen, messageIfFailed: "Expect ')' after while condition.")
+        
+        let body = try statement()
+        return WhileStatement(condition: condition, body: body)
     }
     
     private mutating func block() throws(Lox.Error) -> Block {

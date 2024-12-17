@@ -21,8 +21,10 @@
 /// statement      → exprStmt
 ///                | ifStmt
 ///                | printStmt
+///                | whileStmt
 ///                | block ;
 ///
+/// whileStmt      → "while" "(" expression ")" statement ;
 /// ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 /// block          → "{" declaration* "}" ;
 /// exprStmt       → expression ";" ;
@@ -38,6 +40,7 @@ protocol StatementThrowingVisitor {
     func visitVarStatement(_ statement: VarStatement) throws
     func visitBlock(_ block: Block) throws
     func visitIfStatement(_ statement: IfStatement) throws
+    func visitWhileStatement(_ statement: WhileStatement) throws
 }
 
 struct Block: Statement {
@@ -82,5 +85,14 @@ struct VarStatement: Statement {
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitVarStatement(self)
+    }
+}
+
+struct WhileStatement: Statement {
+    let condition: Expression
+    let body: Statement
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        try visitor.visitWhileStatement(self)
     }
 }

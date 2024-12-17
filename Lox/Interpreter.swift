@@ -238,4 +238,10 @@ extension Interpreter: StatementThrowingVisitor {
             try execute(elseBranch)
         }
     }
+    
+    func visitWhileStatement(_ statement: WhileStatement) throws {
+        while isTruthy(try evaluate(statement.condition)) {
+            try execute(statement.body)
+        }
+    }
 }
