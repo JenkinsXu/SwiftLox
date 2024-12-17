@@ -64,6 +64,7 @@ struct Parser {
         if match(.leftBrace) { return try block() }
         if match(.if) { return try ifStatement() }
         if match(.while) { return try whileStatement() }
+        if match(.for) { return try forStatement() }
         return try expressionStatement()
     }
     
@@ -107,6 +108,51 @@ struct Parser {
         
         let body = try statement()
         return WhileStatement(condition: condition, body: body)
+    }
+    
+    /// Desugar the for loop into a while loop.
+    private mutating func forStatement() throws(Lox.Error) -> Statement {
+        try consume(.leftParen, messageIfFailed: "Expect '(' after 'for'.")
+        
+        var initializer: Statement?
+        if match(.semicolon) {
+            initializer = nil
+        } else if match(.var) {
+            initializer = try varDeclaration()
+        } else {
+            initializer = try expressionStatement()
+        }
+        
+        var condition: Expression?
+        if !check(.semicolon) { // Check if the clause is omitted.
+            condition = try expression()
+        }
+        try consume(.semicolon, messageIfFailed: "Expect ';' after loop condition.")
+        
+        var increment: Expression?
+        if !check(.rightParen) { // Check if the clause is omitted.
+            increment = try expression()
+        }
+        try consume(.rightParen, messageIfFailed: "Expect ')' after for clauses.")
+        
+        var body = try statement()
+        
+        // Desugar the for loop into a while loop.
+        if let increment {
+            body = Block(statements: [body, ExpressionStatement(expression: increment)])
+        }
+        
+        if condition == nil {
+            condition = Literal(value: true)
+        }
+        
+        body = WhileStatement(condition: condition!, body: body)
+        
+        if let initializer {
+            body = Block(statements: [initializer, body])
+        }
+        
+        return body
     }
     
     private mutating func block() throws(Lox.Error) -> Block {
