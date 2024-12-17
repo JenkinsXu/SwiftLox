@@ -56,6 +56,7 @@ extension Interpreter: StatementThrowingVisitor {
     }
     
     func visitFunctionStatement(_ statement: FunctionStatement) throws {
-        <#code#>
+        let function = LoxFunction(declaration: statement)
+        environment.define(statement.name.lexeme, function) // compile-time representation to runtime representation
     }
 }

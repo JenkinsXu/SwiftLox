@@ -55,9 +55,7 @@ struct Block: Statement {
     let statements: [Statement]
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
-        for statement in statements {
-            try statement.accept(visitor)
-        }
+        try visitor.visitBlock(self)
     }
 }
 
