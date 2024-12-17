@@ -5,9 +5,11 @@
 //  Created by Yongqi Xu on 2024-12-17.
 //
 
-struct LoxFunction: LoxCallable {
+struct LoxFunction: LoxCallable, CustomStringConvertible {
     let declaration: FunctionStatement
     var arity: Int { declaration.parameters.count }
+    
+    var description: String { "<fn \(declaration.name.lexeme)>" }
     
     func call(interpreter: Interpreter, arguments: [Any?]) throws -> Any? {
         let environment = Environment(enclosedBy: interpreter.environment)
