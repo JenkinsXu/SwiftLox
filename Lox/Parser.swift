@@ -74,6 +74,7 @@ struct Parser {
     
     private mutating func functionDeclaration(ofKind kind: String) throws(Lox.Error) -> Statement {
         let name = try consume(.identifier, messageIfFailed: "Expect \(kind) name.")
+        try consume(.leftParen, messageIfFailed: "Expect '(' after \(kind) name.")
         var parameters = [Token]()
         if !check(.rightParen) {
             repeat {

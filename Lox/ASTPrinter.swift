@@ -52,4 +52,8 @@ struct ASTPrinter: ExpressionVisitor {
     func visitLogical(_ logical: Logical) -> String {
         parenthesize(logical.operator.lexeme, logical.left, logical.right)
     }
+    
+    func visitCall(_ call: Call) -> String {
+        parenthesize("call \(call.callee)") // TODO: Include arguments.
+    }
 }
