@@ -5,9 +5,26 @@
 //  Created by Yongqi Xu on 2024-12-12.
 //
 
+import Foundation
+
 /// Does a post-order traversal - each node evaluates its children before doing its own work.
 class Interpreter {
-    var environment = Environment()
+    var globals = Environment()
+    var environment: Environment
+    
+    init() {
+        // Native functions
+        struct Clock: LoxCallable {
+            var arity: Int { 0 }
+            
+            func call(interpreter: Interpreter, arguments: [Any?]) throws -> Any? {
+                Date()
+            }
+        }
+        
+        globals.define("clock", Clock())
+        environment = globals
+    }
     
     struct RuntimeError: Error {
         let token: Token
