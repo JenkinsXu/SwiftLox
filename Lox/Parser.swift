@@ -7,6 +7,8 @@
 
 // Just like a scanner, but a parser reads tokens instead.
 /// ```
+/// # Expressions
+///
 /// expression     → assignment ;
 /// assignment     → IDENTIFIER "=" assignment
 ///                | equality ;
@@ -67,9 +69,20 @@ struct Parser {
         if match(.print) { return try printStatement() }
         if match(.leftBrace) { return Block(statements: try block()) }
         if match(.if) { return try ifStatement() }
+        if match(.return) { return try returnStatement() }
         if match(.while) { return try whileStatement() }
         if match(.for) { return try forStatement() }
         return try expressionStatement()
+    }
+    
+    private mutating func returnStatement() throws(Lox.Error) -> ReturnStatement {
+        let keyword = previous()
+        var value: Expression?
+        if !check(.semicolon) {
+            value = try expression()
+        }
+        try consume(.semicolon, messageIfFailed: "Expect ';' after return value.")
+        return ReturnStatement(keyword: keyword, value: value)
     }
     
     private mutating func functionDeclaration(ofKind kind: String) throws(Lox.Error) -> Statement {

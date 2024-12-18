@@ -36,6 +36,11 @@ class Interpreter {
         }
     }
     
+    /// Throwing this helps to break out of nested execution.
+    struct ReturnValue: Error {
+        let value: Any?
+    }
+    
     func interpret(_ statements: [Statement]) throws {
         for statement in statements {
             try execute(statement)

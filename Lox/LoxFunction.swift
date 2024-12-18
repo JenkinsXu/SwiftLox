@@ -17,7 +17,12 @@ struct LoxFunction: LoxCallable, CustomStringConvertible {
             environment.define(parameter.lexeme, argument)
         }
         
-        try interpreter.executeBlock(declaration.body, environment)
-        return nil // TODO: Add return statement.
+        do {
+            try interpreter.executeBlock(declaration.body, environment)
+        } catch let returnValue as Interpreter.ReturnValue {
+            return returnValue.value
+        }
+        
+        return nil
     }
 }

@@ -59,4 +59,12 @@ extension Interpreter: StatementThrowingVisitor {
         let function = LoxFunction(declaration: statement)
         environment.define(statement.name.lexeme, function) // compile-time representation to runtime representation
     }
+    
+    func visitReturnStatement(_ statement: ReturnStatement) throws {
+        var returnValue: Any? = nil
+        if let valueExpression = statement.value {
+            returnValue = try evaluate(valueExpression)
+        }
+        throw ReturnValue(value: returnValue)
+    }
 }

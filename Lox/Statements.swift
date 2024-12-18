@@ -9,6 +9,8 @@
 /// Since the two syntaxes are disjoint, we don't need a single base class that they all inherit from.
 ///
 /// ```
+/// #Statements
+///
 /// program        → declaration* EOF ;
 ///
 /// // requires this distinction because
@@ -27,10 +29,12 @@
 ///                | forStmt
 ///                | ifStmt
 ///                | printStmt
+///                | returnStmt
 ///                | whileStmt
 ///                | block ;
 ///
 /// forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+/// returnStmt     → "return" expression? ";" ; // default to nil for void functions
 /// whileStmt      → "while" "(" expression ")" statement ;
 /// ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 /// block          → "{" declaration* "}" ;
@@ -49,6 +53,7 @@ protocol StatementThrowingVisitor {
     func visitBlock(_ block: Block) throws
     func visitIfStatement(_ statement: IfStatement) throws
     func visitWhileStatement(_ statement: WhileStatement) throws
+    func visitReturnStatement(_ statement: ReturnStatement) throws
 }
 
 struct Block: Statement {
@@ -111,5 +116,14 @@ struct WhileStatement: Statement {
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitWhileStatement(self)
+    }
+}
+
+struct ReturnStatement: Statement {
+    let keyword: Token // The return token, used for error reporting.
+    let value: Expression?
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        try visitor.visitReturnStatement(self)
     }
 }
