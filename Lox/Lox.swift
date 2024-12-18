@@ -50,6 +50,8 @@ public struct Lox {
             if arguments.count > 2 {
                 print("Usage: slox [script]")
             } else if arguments.count == 2 {
+                // To test in Xcode, choose the Lox-File scheme,
+                // then change the path in "Edit Scheme" -> "Arguments Passed On Launch"
                 try runFile(arguments[1])
             } else {
                 try runPrompt()
