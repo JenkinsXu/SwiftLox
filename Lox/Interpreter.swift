@@ -10,7 +10,7 @@ import Foundation
 /// Does a post-order traversal - each node evaluates its children before doing its own work.
 class Interpreter {
     var globals = Environment()
-    var environment: Environment
+    var environment: Environment // Current environment. Changes as we enter and exit local scopes.
     
     init() {
         // Native functions
