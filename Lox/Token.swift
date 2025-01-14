@@ -66,6 +66,7 @@ extension Token {
         
         case eof
         
+        /// A dictionary of reserved keywords and their corresponding token types.
         static let keywords: [String: TokenType] = [
             "and": .and,
             "class": .class,

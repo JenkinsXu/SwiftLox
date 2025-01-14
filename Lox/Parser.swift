@@ -51,8 +51,8 @@ struct Parser {
             do {
                 statements.append(try declaration())
             } catch {
-                // Went into panic mode. Get back to trying to parse the next statement.
-                synchronize()
+                Lox.reportWithoutThrowing(error)
+                synchronize() // Went into panic mode. Get back to trying to parse the next statement.
             }
         }
         
@@ -92,7 +92,7 @@ struct Parser {
         if !check(.rightParen) {
             repeat {
                 if parameters.count >= 255 {
-                    throw .parsingFailure(peek(), "Cannot have more than 255 parameters.")
+                    Lox.reportWithoutThrowing(.parsingFailure(peek(), "Cannot have more than 255 parameters.")) // No need to go into panic mode.
                 }
                 parameters.append(try consume(.identifier, messageIfFailed: "Expect parameter name."))
             } while match(.comma)
@@ -221,6 +221,7 @@ struct Parser {
     }
     
     /// Check if the current token type matches any of the types.
+    /// Essentailly a `peek()` that checks for types.
     private func check(_ type: TokenType) -> Bool {
         if isAtEnd {
             return false
@@ -265,7 +266,7 @@ struct Parser {
                 return Assign(name: name, value: value)
             }
             
-            throw .parsingFailure(equals, "Invalid assignment target.")
+            Lox.reportWithoutThrowing(.parsingFailure(equals, "Invalid assignment target.")) // No need to go into panic mode.
         }
         
         return expression
@@ -413,6 +414,7 @@ struct Parser {
         throw .parsingFailure(peek(), "Expect expression.")
     }
     
+    /// Essentailly an `advance()` with a type check.
     @discardableResult
     private mutating func consume(_ type: TokenType, messageIfFailed message: String) throws(Lox.Error) -> Token {
         if check(type) {

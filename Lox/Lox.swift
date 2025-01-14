@@ -44,6 +44,8 @@ public struct Lox {
         }
     }
     
+    private static var hadError = false
+    
     public static func main() {
         do {
             let arguments = CommandLine.arguments
@@ -62,6 +64,11 @@ public struct Lox {
         }
     }
     
+    static func reportWithoutThrowing(_ error: Error) {
+        hadError = true
+        print(error.localizedDescription)
+    }
+    
     private static func runFile(_ path: String) throws {
         let source = try String(contentsOfFile: path, encoding: .utf8)
         run(source)
@@ -77,7 +84,7 @@ public struct Lox {
 
     private static func run(_ source: String) {
         var scanner = Scanner(source: source)
-        let (hadError, tokens) = scanner.scanTokens()
+        let tokens = scanner.scanTokens()
         
         var parser = Parser(tokens: tokens)
         let statements = parser.parse()

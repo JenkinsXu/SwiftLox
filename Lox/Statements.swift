@@ -42,7 +42,19 @@
 /// printStmt      → "print" expression ";" ;
 /// ```
 protocol Statement { // Commonly written as "Stmt"
+    func accept<V: StatementVisitor>(_ visitor: V)
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws
+}
+
+protocol StatementVisitor {
+    func visitExpressionStatement(_ statement: ExpressionStatement)
+    func visitPrintStatement(_ statement: PrintStatement)
+    func visitFunctionStatement(_ statement: FunctionStatement)
+    func visitVarStatement(_ statement: VarStatement)
+    func visitBlock(_ block: Block)
+    func visitIfStatement(_ statement: IfStatement)
+    func visitWhileStatement(_ statement: WhileStatement)
+    func visitReturnStatement(_ statement: ReturnStatement)
 }
 
 protocol StatementThrowingVisitor {
@@ -59,6 +71,10 @@ protocol StatementThrowingVisitor {
 struct Block: Statement {
     let statements: [Statement]
     
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitBlock(self)
+    }
+    
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitBlock(self)
     }
@@ -66,6 +82,10 @@ struct Block: Statement {
 
 struct ExpressionStatement: Statement {
     let expression: Expression
+    
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitExpressionStatement(self)
+    }
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitExpressionStatement(self)
@@ -77,6 +97,10 @@ struct IfStatement: Statement {
     let thenBranch: Statement
     let elseBranch: Statement?
     
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitIfStatement(self)
+    }
+    
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitIfStatement(self)
     }
@@ -84,6 +108,10 @@ struct IfStatement: Statement {
 
 struct PrintStatement: Statement {
     let expression: Expression
+    
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitPrintStatement(self)
+    }
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitPrintStatement(self)
@@ -96,6 +124,10 @@ struct FunctionStatement: Statement {
     let parameters: [Token]
     let body: [Statement]
     
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitFunctionStatement(self)
+    }
+    
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitFunctionStatement(self)
     }
@@ -104,6 +136,10 @@ struct FunctionStatement: Statement {
 struct VarStatement: Statement {
     let name: Token
     let initializer: Expression?
+    
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitVarStatement(self)
+    }
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitVarStatement(self)
@@ -114,6 +150,10 @@ struct WhileStatement: Statement {
     let condition: Expression
     let body: Statement
     
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitWhileStatement(self)
+    }
+    
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitWhileStatement(self)
     }
@@ -122,6 +162,10 @@ struct WhileStatement: Statement {
 struct ReturnStatement: Statement {
     let keyword: Token // The return token, used for error reporting.
     let value: Expression?
+    
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitReturnStatement(self)
+    }
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
         try visitor.visitReturnStatement(self)

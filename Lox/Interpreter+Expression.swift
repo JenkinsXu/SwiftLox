@@ -9,7 +9,7 @@ extension Interpreter: ExpressionThrowingVisitor {
     typealias Output = Any?
     
     func visitLiteral(_ literal: Literal) throws -> Output {
-        literal.value
+        literal.value // The value is extracted by the parser.
     }
     
     func visitGrouping(_ grouping: Grouping) throws -> Output {

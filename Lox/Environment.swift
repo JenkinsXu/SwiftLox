@@ -5,6 +5,8 @@
 //  Created by Yongqi Xu on 2024-12-16.
 //
 
+// We can't directly change this to a struct because it would be a recursive type,
+// which would cause problems when calculating the size of the struct.
 class Environment {
     var enclosing: Environment? // Parent-pointer tree.
     private var values: [String: Any?] = [:]
@@ -14,6 +16,11 @@ class Environment {
     }
     
     func get(_ name: Token) throws -> Any? {
+        // The variable gets re-resolved every time it's used.
+        // We can avoid this with Semantic Analysis.
+        // Static scope means that a vairable usage always
+        // resolves to the same declaration.
+        // A more efficient implementation is explored in the C interpreter.
         if let value = values[name.lexeme] {
             return value
         } else if let enclosing {
@@ -21,6 +28,7 @@ class Environment {
         } else {
             // Note: It should not be a static syntax error because
             // using a variable isn't the same as referring to it.
+            // For example, when referring to a variable in a function.
             // Mentioning a variable before it's been declared is allowed.
             throw Interpreter.RuntimeError(token: name, message: "Undefined variable \"\(name.lexeme)\".")
         }

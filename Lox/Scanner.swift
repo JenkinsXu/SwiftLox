@@ -20,22 +20,20 @@ struct Scanner {
         currentIndex >= source.endIndex
     }
     
-    var hadError = false
-    
     init(source: String) {
         self.source = source
         self.startIndex = source.startIndex
         self.currentIndex = source.startIndex
     }
     
-    mutating func scanTokens() -> (Bool, [Token]) {
+    mutating func scanTokens() -> [Token] {
         while !isAtEnd {
             startIndex = currentIndex
             scanToken()
         }
         
         tokens.append(Token(type: .eof, lexeme: "", literal: nil, line: line))
-        return (hadError, tokens)
+        return tokens
     }
     
     mutating func scanToken() {
@@ -73,9 +71,7 @@ struct Scanner {
                 identifier()
             } else {
                 // Instead of throwing the error, we keep scanning, as there might be more errors.
-                let error: Lox.Error = .unexpectedCharacter(character, line)
-                hadError = true
-                print(error.localizedDescription)
+                Lox.reportWithoutThrowing(.unexpectedCharacter(character, line))
             }
         }
     }
@@ -132,9 +128,7 @@ struct Scanner {
         }
         
         if isAtEnd {
-            let error: Lox.Error = .untermindatedString(line)
-            hadError = true
-            print(error.localizedDescription)
+            Lox.reportWithoutThrowing(.untermindatedString(line))
             return
         }
         
@@ -156,12 +150,14 @@ struct Scanner {
         return true
     }
     
-    /// One character look ahead.
+    /// One character look ahead. Usually used to check if the next character is "advance-able".
     private func peek() -> Character {
         if isAtEnd { return "\0" }
         return source[currentIndex]
     }
     
+    /// Imagine that you are typing out the source code on a paper token by token using Vim. `advance()` will type the next character and move the cursor forward.
+    /// `peek()` will be you checking if the next (current) character should be included in the current token. `match()` would be an equality check.
     @discardableResult
     private mutating func advance() -> Character {
         defer { currentIndex = source.index(after: currentIndex) }
