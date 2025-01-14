@@ -45,7 +45,7 @@ struct Parser {
         self.tokens = tokens
     }
     
-    mutating func parse() -> [Statement]? {
+    mutating func parse() -> [Statement] {
         var statements = [Statement]()
         while !isAtEnd {
             do {
@@ -56,7 +56,7 @@ struct Parser {
             }
         }
         
-        return statements.isEmpty ? nil : statements
+        return statements
     }
     
     private mutating func declaration() throws(Lox.Error) -> Statement {

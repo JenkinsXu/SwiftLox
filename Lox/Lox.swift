@@ -15,6 +15,7 @@ public struct Lox {
         case unexpectedCharacter(Character, UInt)
         case untermindatedString(UInt)
         case parsingFailure(Token, String)
+        case resolutionFailure(Token, String)
         
         // TODO: Find correct exit codes.
         var exitCode: Int32 {
@@ -26,6 +27,8 @@ public struct Lox {
             case .untermindatedString:
                 return 64
             case .parsingFailure:
+                return 64
+            case .resolutionFailure:
                 return 64
             }
         }
@@ -39,6 +42,8 @@ public struct Lox {
             case .untermindatedString(let lineNumber):
                 return "Error: Unterminated string at line \(lineNumber)."
             case .parsingFailure(let token, let message):
+                return "Error: \(message) at line \(token.line)."
+            case .resolutionFailure(let token, let message):
                 return "Error: \(message) at line \(token.line)."
             }
         }
@@ -88,8 +93,11 @@ public struct Lox {
         
         var parser = Parser(tokens: tokens)
         let statements = parser.parse()
+
+        guard !hadError else { return }
         
-        guard !hadError, let statements else { return }
+        Resolver(interpreter: interpreter).resolve(statements: statements)
+        guard !hadError else { return }
         
         do {
             try interpreter.interpret(statements)

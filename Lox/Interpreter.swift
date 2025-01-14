@@ -11,6 +11,7 @@ import Foundation
 class Interpreter {
     var globals = Environment()
     var environment: Environment // Current environment. Changes as we enter and exit local scopes.
+    var locals = [Expression: Int]() // Easy to discard when incrementally reparising, compared to storing in the AST.
     
     init() {
         // Native functions
@@ -76,5 +77,9 @@ class Interpreter {
             return value
         }
         return value != nil
+    }
+    
+    func resolve(expression: Expression, depth: Int) {
+        locals[expression] = depth
     }
 }

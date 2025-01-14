@@ -78,12 +78,26 @@ extension Interpreter: ExpressionThrowingVisitor {
     }
     
     func visitVariable(_ variable: Variable) throws -> Output {
-        return try environment.get(variable.name)
+        return try lookUpVariable(name: variable.name, expression: variable)
+    }
+    
+    private func lookUpVariable(name: Token, expression: Expression) throws -> Any? {
+        if let distance = locals[expression] {
+            return try environment.get(atDistance: distance, withName: name.lexeme)
+        } else {
+            return try globals.get(name)
+        }
     }
     
     func visitAssign(_ assign: Assign) throws -> Output {
         let value = try evaluate(assign.value)
-        try environment.assign(assign.name, value)
+        
+        if let distance = locals[assign] {
+            try environment.assign(atDistance: distance, withName: assign.name, value: value)
+        } else {
+            try globals.assign(assign.name, value)
+        }
+        
         return value
     }
     

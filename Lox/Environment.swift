@@ -51,4 +51,23 @@ class Environment {
             throw Interpreter.RuntimeError(token: name, message: "Undefined variable \"\(name.lexeme)\".")
         }
     }
+    
+    func get(atDistance distance: Int, withName name: String) throws -> Any? {
+        try ancestor(distance).values[name] ?? nil
+    }
+    
+    func assign(atDistance distance: Int, withName name: Token, value: Any?) throws {
+        try ancestor(distance).values[name] = value
+    }
+    
+    private func ancestor(_ distance: Int) throws -> Environment {
+        var environment = self
+        for _ in 0..<distance {
+            guard let enclosing = environment.enclosing else {
+                throw Interpreter.RuntimeError(token: Token(type: .eof, lexeme: "", literal: nil, line: 0), message: "Environment not found.")
+            }
+            environment = enclosing
+        }
+        return environment
+    }
 }

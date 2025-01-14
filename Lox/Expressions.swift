@@ -6,9 +6,23 @@
 //
 
 /// Properties of an expressions are what evaluators need to produce a value.
-protocol Expression {
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output
+/// Expressions are requried to be hashable because the interpreter uses them as keys in `locals`.
+class Expression: Hashable {
+    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+        fatalError("Subclasses must override this method.")
+    }
+    
+    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+        fatalError("Subclasses must override this method.")
+    }
+
+    static func == (lhs: Expression, rhs: Expression) -> Bool {
+        ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
 }
 
 protocol ExpressionVisitor { // For grouping functionalities together
@@ -35,107 +49,147 @@ protocol ExpressionThrowingVisitor {
     func visitCall(_ call: Call) throws -> Output
 }
 
-struct Assign: Expression {
+class Assign: Expression {
     let name: Token
     let value: Expression
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(name: Token, value: Expression) {
+        self.name = name
+        self.value = value
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitAssign(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitAssign(self)
     }
 }
 
-struct Binary: Expression {
+class Binary: Expression {
     let left: Expression
     let `operator`: Token
     let right: Expression
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(left: Expression, operator: Token, right: Expression) {
+        self.left = left
+        self.operator = `operator`
+        self.right = right
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitBinary(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitBinary(self)
     }
 }
 
-struct Grouping: Expression {
+class Grouping: Expression {
     let expression: Expression
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(expression: Expression) {
+        self.expression = expression
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitGrouping(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitGrouping(self)
     }
 }
 
-struct Literal: Expression {
+class Literal: Expression {
     let value: Any?
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(value: Any?) {
+        self.value = value
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitLiteral(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitLiteral(self)
     }
 }
 
 /// Essentially the same fields as Binary. Separated to handle short-circuiting.
-struct Logical: Expression {
+class Logical: Expression {
     let left: Expression
     let `operator`: Token
     let right: Expression
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(left: Expression, operator: Token, right: Expression) {
+        self.left = left
+        self.operator = `operator`
+        self.right = right
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitLogical(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitLogical(self)
     }
 }
 
-struct Unary: Expression {
+class Unary: Expression {
     let `operator`: Token
     let right: Expression
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(`operator`: Token, right: Expression) {
+        self.operator = `operator`
+        self.right = right
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitUnary(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitUnary(self)
     }
 }
 
-struct Variable: Expression {
+class Variable: Expression {
     let name: Token
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(name: Token) {
+        self.name = name
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitVariable(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitVariable(self)
     }
 }
 
-struct Call: Expression {
+class Call: Expression {
     let callee: Expression
     let paren: Token // Token for the closing parenthesis. Used for error reporting.
     let arguments: [Expression]
     
-    func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
+    init(callee: Expression, paren: Token, arguments: [Expression]) {
+        self.callee = callee
+        self.paren = paren
+        self.arguments = arguments
+    }
+    
+    override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.Output {
         visitor.visitCall(self)
     }
     
-    func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
+    override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitCall(self)
     }
 }
