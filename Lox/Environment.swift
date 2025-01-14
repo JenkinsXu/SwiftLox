@@ -57,7 +57,7 @@ class Environment {
     }
     
     func assign(atDistance distance: Int, withName name: Token, value: Any?) throws {
-        try ancestor(distance).values[name] = value
+        try ancestor(distance).values[name.lexeme] = value
     }
     
     private func ancestor(_ distance: Int) throws -> Environment {
