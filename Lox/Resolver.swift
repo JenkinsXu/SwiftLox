@@ -52,6 +52,7 @@ class Resolver {
     enum ClassType {
         case none
         case `class`
+        case subclass
     }
     
     init(interpreter: Interpreter) {
@@ -123,6 +124,12 @@ extension Resolver: ExpressionVisitor {
     }
     
     func visitSuper(_ super: Super) {
+        if currentClassType == .none {
+            Lox.reportWithoutThrowing(.resolutionFailure(`super`.keyword, "Can't use 'super' outside of a class."))
+        } else if currentClassType != .subclass {
+            Lox.reportWithoutThrowing(.resolutionFailure(`super`.keyword, "Can't use 'super' in a class with no superclass."))
+        }
+        
         resolveLocal(`super`, withName: `super`.keyword)
     }
     
@@ -162,6 +169,8 @@ extension Resolver: StatementVisitor {
             if `class`.name.lexeme == superclass.name.lexeme {
                 Lox.reportWithoutThrowing(.resolutionFailure(superclass.name, "A class can't inherit from itself."))
             }
+            
+            currentClassType = .subclass
             
             resolve(expression: superclass)
         }
