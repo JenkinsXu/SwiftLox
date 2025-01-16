@@ -47,6 +47,12 @@ class Resolver {
         case method
     }
     
+    var currentClassType: ClassType = .none
+    enum ClassType {
+        case none
+        case `class`
+    }
+    
     init(interpreter: Interpreter) {
         self.interpreter = interpreter
     }
@@ -116,6 +122,10 @@ extension Resolver: ExpressionVisitor {
     }
     
     func visitThis(_ this: This) {
+        guard currentClassType != .none else {
+            Lox.reportWithoutThrowing(.resolutionFailure(this.keyword, "Can't use 'this' outside of a class."))
+            return
+        }
         resolveLocal(this, withName: this.keyword)
     }
     
@@ -137,6 +147,9 @@ extension Resolver: ExpressionVisitor {
 
 extension Resolver: StatementVisitor {
     func visitClassStatement(_ class: Class) {
+        let enclosingClassType = currentClassType
+        currentClassType = .class
+        
         declare(name: `class`.name)
         define(name: `class`.name)
         
@@ -146,6 +159,8 @@ extension Resolver: StatementVisitor {
             resolveFunction(method, ofType: .method)
         }
         endScope()
+        
+        currentClassType = enclosingClassType
     }
     
     func visitBlockStatement(_ block: Block) {
