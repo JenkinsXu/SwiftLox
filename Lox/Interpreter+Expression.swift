@@ -158,6 +158,10 @@ extension Interpreter: ExpressionThrowingVisitor {
         return value
     }
     
+    func visitThis(_ this: This) throws -> Any? {
+        return try lookUpVariable(name: this.keyword, expression: this)
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {

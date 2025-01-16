@@ -26,4 +26,10 @@ struct LoxFunction: LoxCallable, CustomStringConvertible {
         
         return nil
     }
+    
+    func bind(_ instance: LoxInstance) -> LoxFunction {
+        let environment = Environment(enclosedBy: closure)
+        environment.define(name: "this", value: instance)
+        return LoxFunction(declaration: declaration, closure: environment)
+    }
 }

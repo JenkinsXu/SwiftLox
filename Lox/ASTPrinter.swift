@@ -64,4 +64,8 @@ struct ASTPrinter: ExpressionVisitor {
     func visitSet(_ set: SetExpression) -> String {
         parenthesize("set \(set.object).\(set.name)", set.value)
     }
+    
+    func visitThis(_ this: This) -> String {
+        parenthesize("this")
+    }
 }

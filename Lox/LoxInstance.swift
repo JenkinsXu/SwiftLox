@@ -23,7 +23,7 @@ class LoxInstance: CustomStringConvertible {
         if let field = fields[name.lexeme] {
             return field
         } else if let method = `class`.findMethod(withName: name.lexeme) {
-            return method
+            return method.bind(self)
         } else {
             throw Interpreter.RuntimeError(token: name, message: "Undefined property \(name.lexeme).")
         }

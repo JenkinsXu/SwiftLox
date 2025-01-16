@@ -110,9 +110,13 @@ extension Resolver: ExpressionVisitor {
         resolve(expression: get.object) // Since properties are looked up dynamically, they don't get resolved
     }
     
-    func visitSet(_ set: SetExpression) -> Void {
+    func visitSet(_ set: SetExpression) {
         resolve(expression: set.value)
         resolve(expression: set.object) // Since properties are looked up dynamically, they don't get resolved
+    }
+    
+    func visitThis(_ this: This) {
+        resolveLocal(this, withName: this.keyword)
     }
     
     func visitGrouping(_ grouping: Grouping) {
@@ -134,12 +138,14 @@ extension Resolver: ExpressionVisitor {
 extension Resolver: StatementVisitor {
     func visitClassStatement(_ class: Class) {
         declare(name: `class`.name)
+        define(name: `class`.name)
         
+        beginScope()
+        scopes[scopes.count - 1]["this"] = true // Declare before resolution.
         for method in `class`.methods {
             resolveFunction(method, ofType: .method)
         }
-        
-        define(name: `class`.name)
+        endScope()
     }
     
     func visitBlockStatement(_ block: Block) {

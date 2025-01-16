@@ -37,6 +37,7 @@ protocol ExpressionVisitor { // For grouping functionalities together
     func visitCall(_ call: Call) -> Output
     func visitGet(_ get: Get) -> Output
     func visitSet(_ set: SetExpression) -> Output
+    func visitThis(_ this: This) -> Output
 }
 
 protocol ExpressionThrowingVisitor {
@@ -51,6 +52,7 @@ protocol ExpressionThrowingVisitor {
     func visitCall(_ call: Call) throws -> Output
     func visitGet(_ get: Get) throws -> Output
     func visitSet(_ set: SetExpression) throws -> Output
+    func visitThis(_ this: This) throws -> Output
 }
 
 class Assign: Expression {
@@ -161,6 +163,22 @@ class SetExpression: Expression {
     
     override func accept<V>(_ visitor: V) throws -> V.Output where V : ExpressionThrowingVisitor {
         try visitor.visitSet(self)
+    }
+}
+
+class This: Expression {
+    let keyword: Token
+    
+    init(keyword: Token) {
+        self.keyword = keyword
+    }
+    
+    override func accept<V>(_ visitor: V) -> V.Output where V : ExpressionVisitor {
+        visitor.visitThis(self)
+    }
+    
+    override func accept<V>(_ visitor: V) throws -> V.Output where V : ExpressionThrowingVisitor {
+        try visitor.visitThis(self)
     }
 }
 

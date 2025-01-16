@@ -418,6 +418,10 @@ struct Parser {
             return Literal(value: previous().literal)
         }
         
+        if match(.this) {
+            return This(keyword: previous())
+        }
+        
         if match(.identifier) {
             return Variable(name: previous())
         }

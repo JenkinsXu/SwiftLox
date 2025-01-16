@@ -83,3 +83,12 @@ bill.name = "Bill";
 bill.sayName = jane.sayName;
 bill.sayName(); // ?
 
+// Example 6 (Capturing `this`)
+class Egotist {
+  speak() {
+    print this;
+  }
+}
+
+var method = Egotist().speak;
+method();
