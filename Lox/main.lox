@@ -38,3 +38,7 @@ class Breakfast {
 }
 
 print Breakfast; // "Breakfast".
+
+class Bagel {}
+var bagel = Bagel();
+print bagel;
