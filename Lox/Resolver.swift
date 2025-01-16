@@ -154,6 +154,14 @@ extension Resolver: StatementVisitor {
         declare(name: `class`.name)
         define(name: `class`.name)
         
+        if let superclass = `class`.superclass {
+            if `class`.name.lexeme == superclass.name.lexeme {
+                Lox.reportWithoutThrowing(.resolutionFailure(superclass.name, "A class can't inherit from itself."))
+            }
+            
+            resolve(expression: superclass)
+        }
+        
         beginScope()
         scopes[scopes.count - 1]["this"] = true // Declare before resolution.
         for method in `class`.methods {

@@ -126,6 +126,13 @@ struct Parser {
     
     private mutating func classDeclaration() throws(Lox.Error) -> Class {
         let name = try consume(.identifier, messageIfFailed: "Expect class name.")
+        
+        var superclass: Variable? = nil
+        if match(.less) {
+            try consume(.identifier, messageIfFailed: "Expect superclass name.")
+            superclass = Variable(name: previous())
+        }
+        
         try consume(.leftBrace, messageIfFailed: "Expect '{' before class body.")
         
         var methods = [FunctionStatement]()
@@ -134,7 +141,7 @@ struct Parser {
         }
         
         try consume(.rightBrace, messageIfFailed: "Expect '}' after class body.")
-        return Class(name: name, methods: methods)
+        return Class(name: name, superclass: superclass, methods: methods)
     }
     
     private mutating func functionDeclaration(ofKind kind: String) throws(Lox.Error) -> Statement {
@@ -261,6 +268,7 @@ struct Parser {
     }
     
     /// Check for the current token type and advance if it matches any of the types.
+    /// This is usually used to check for an optional token. For required tokens, use `consume(_:messageIfFailed:)` instead.
     /// Note that the matching token will be consumed, so please use `previous()` to get the token.
     private mutating func match(_ types: TokenType...) -> Bool {
         for type in types {

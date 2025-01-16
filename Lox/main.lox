@@ -92,3 +92,7 @@ class Egotist {
 
 var method = Egotist().speak;
 method();
+
+// Example 7 (Inheritance)
+class Parent {}
+class Child < Parent {}

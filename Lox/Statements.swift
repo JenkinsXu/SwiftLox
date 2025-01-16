@@ -50,6 +50,7 @@ struct Block: Statement {
 
 struct Class: Statement {
     let name: Token
+    let superclass: Variable? // At runtime, the identifier is evaluated as a variable access.
     let methods: [FunctionStatement]
     
     func accept<V: StatementVisitor>(_ visitor: V) {

@@ -28,6 +28,16 @@ extension Interpreter: StatementThrowingVisitor {
     }
     
     func visitClassStatement(_ statement: Class) throws {
+        var superclass: LoxClass?
+        if let superclassExpression = statement.superclass {
+            let evaluatedSuperclass = try evaluate(superclassExpression)
+            if let evaluatedSuperclass = evaluatedSuperclass as? LoxClass {
+                superclass = evaluatedSuperclass
+            } else {
+                throw RuntimeError(token: superclassExpression.name, message: "Superclass must be a class.")
+            }
+        }
+        
         // TODO: The two-stage variable binding process allows references to the class inside its own methods.
         environment.define(name: statement.name.lexeme, value: nil)
         
@@ -35,7 +45,7 @@ extension Interpreter: StatementThrowingVisitor {
             (method.name.lexeme, LoxFunction(declaration: method, closure: environment, isInitializer: method.name.lexeme == "init"))
         })
         
-        let `class` = LoxClass(name: statement.name.lexeme, methods: methods)
+        let `class` = LoxClass(name: statement.name.lexeme, superclass: superclass, methods: methods)
         try environment.assign(statement.name, `class`)
     }
     

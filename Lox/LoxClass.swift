@@ -6,8 +6,10 @@
 //
 
 /// A runtime representation of a class.
-struct LoxClass: CustomStringConvertible, LoxCallable {
+class LoxClass: CustomStringConvertible, LoxCallable {
     let name: String
+    
+    let superclass: LoxClass?
     
     /// Where an instance stores state, the class stores behavior. `LoxInstance` has its map of fields, and `LoxClass` gets a map of methods.
     let methods: [String: LoxFunction]
@@ -22,6 +24,12 @@ struct LoxClass: CustomStringConvertible, LoxCallable {
         } else {
             return 0
         }
+    }
+    
+    init(name: String, superclass: LoxClass?, methods: [String : LoxFunction]) {
+        self.name = name
+        self.superclass = superclass
+        self.methods = methods
     }
     
     func call(interpreter: Interpreter, arguments: [Any?]) throws -> Any? {
