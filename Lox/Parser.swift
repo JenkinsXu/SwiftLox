@@ -61,7 +61,7 @@
 /// call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 /// arguments      → expression ( "," expression )* ;
 /// primary        → NUMBER | STRING | "true" | "false" | "nil"
-///                | "(" expression ")" | IDENTIFIER ;
+///                | "(" expression ")" | IDENTIFIER | "super" "." IDENTIFIER ; // We can't have super without properties.
 /// ```
 ///
 /// Goals of error handling (achieved with synchronization):
@@ -462,6 +462,13 @@ struct Parser {
         
         if match(.number, .string) {
             return Literal(value: previous().literal)
+        }
+        
+        if match(.super) {
+            let keyword = previous()
+            try consume(.dot, messageIfFailed: "Expect '.' after 'super'.")
+            let method = try consume(.identifier, messageIfFailed: "Expect superclass method name.")
+            return Super(keyword: keyword, method: method)
         }
         
         if match(.this) {

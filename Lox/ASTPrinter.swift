@@ -68,4 +68,8 @@ struct ASTPrinter: ExpressionVisitor {
     func visitThis(_ this: This) -> String {
         parenthesize("this")
     }
+    
+    func visitSuper(_ super: Super) -> String {
+        parenthesize("super")
+    }
 }

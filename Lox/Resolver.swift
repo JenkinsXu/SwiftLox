@@ -122,6 +122,10 @@ extension Resolver: ExpressionVisitor {
         resolve(expression: set.object) // Since properties are looked up dynamically, they don't get resolved
     }
     
+    func visitSuper(_ super: Super) {
+        resolveLocal(`super`, withName: `super`.keyword)
+    }
+    
     func visitThis(_ this: This) {
         guard currentClassType != .none else {
             Lox.reportWithoutThrowing(.resolutionFailure(this.keyword, "Can't use 'this' outside of a class."))
@@ -162,12 +166,21 @@ extension Resolver: StatementVisitor {
             resolve(expression: superclass)
         }
         
+        if `class`.superclass != nil {
+            beginScope()
+            scopes[scopes.count - 1]["super"] = true
+        }
+        
         beginScope()
         scopes[scopes.count - 1]["this"] = true // Declare before resolution.
         for method in `class`.methods {
             resolveFunction(method, ofType: method.name.lexeme == "init" ? .initializer : .method)
         }
         endScope()
+        
+        if `class`.superclass != nil {
+            endScope()
+        }
         
         currentClassType = enclosingClassType
     }

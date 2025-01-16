@@ -162,6 +162,20 @@ extension Interpreter: ExpressionThrowingVisitor {
         return try lookUpVariable(name: this.keyword, expression: this)
     }
     
+    func visitSuper(_ super: Super) throws -> Any? {
+        guard let distance = locals[`super`], // super -> this -> body
+              let superclass = try environment.get(atDistance: distance, withName: "super") as? LoxClass,
+              let object = try environment.get(atDistance: distance - 1, withName: "this") as? LoxInstance else { // Implicitly the same current object.
+            throw RuntimeError(token: `super`.keyword, message: "Can't use 'super' in a class with no superclass.")
+        }
+        
+        guard let superMethod = superclass.findMethod(withName: `super`.method.lexeme) else {
+            throw RuntimeError(token: `super`.keyword, message: "Undefined property '\(`super`.method.lexeme)'.")
+        }
+        
+        return superMethod.bind(object)
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {

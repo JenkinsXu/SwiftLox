@@ -41,11 +41,21 @@ extension Interpreter: StatementThrowingVisitor {
         // TODO: The two-stage variable binding process allows references to the class inside its own methods.
         environment.define(name: statement.name.lexeme, value: nil)
         
+        if superclass != nil {
+            environment = Environment(enclosedBy: environment)
+            environment.define(name: "super", value: superclass)
+        }
+        
         let methods = Dictionary(uniqueKeysWithValues: statement.methods.map { method in
             (method.name.lexeme, LoxFunction(declaration: method, closure: environment, isInitializer: method.name.lexeme == "init"))
         })
         
         let `class` = LoxClass(name: statement.name.lexeme, superclass: superclass, methods: methods)
+        
+        if superclass != nil {
+            environment = environment.enclosing!
+        }
+        
         try environment.assign(statement.name, `class`)
     }
     
