@@ -34,7 +34,7 @@ class Environment {
         }
     }
     
-    func define(_ name: String, _ value: Any?) {
+    func define(name: String, value: Any?) {
         if value == nil {
             values[name] = Any?.none // Directly setting nil will remove the key.
         } else {

@@ -60,6 +60,7 @@ struct Parser {
     }
     
     private mutating func declaration() throws(Lox.Error) -> Statement {
+        if match(.class) { return try classDeclaration() }
         if match(.fun) { return try functionDeclaration(ofKind: "function") }
         if match(.var) { return try varDeclaration() }
         return try statement()
@@ -83,6 +84,19 @@ struct Parser {
         }
         try consume(.semicolon, messageIfFailed: "Expect ';' after return value.")
         return ReturnStatement(keyword: keyword, value: value)
+    }
+    
+    private mutating func classDeclaration() throws(Lox.Error) -> Class {
+        let name = try consume(.identifier, messageIfFailed: "Expect class name.")
+        try consume(.leftBrace, messageIfFailed: "Expect '{' before class body.")
+        
+        var methods = [FunctionStatement]()
+        while !check(.rightBrace) && !isAtEnd {
+            methods.append(try functionDeclaration(ofKind: "method") as! FunctionStatement)
+        }
+        
+        try consume(.rightBrace, messageIfFailed: "Expect '}' after class body.")
+        return Class(name: name, methods: methods)
     }
     
     private mutating func functionDeclaration(ofKind kind: String) throws(Lox.Error) -> Statement {

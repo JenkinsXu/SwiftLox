@@ -122,7 +122,12 @@ extension Resolver: ExpressionVisitor {
 }
 
 extension Resolver: StatementVisitor {
-    func visitBlock(_ block: Block) {
+    func visitClassStatement(_ class: Class) {
+        declare(name: `class`.name)
+        define(name: `class`.name)
+    }
+    
+    func visitBlockStatement(_ block: Block) {
         beginScope()
         resolve(statements: block.statements)
         endScope()

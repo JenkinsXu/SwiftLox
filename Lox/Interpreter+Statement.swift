@@ -24,10 +24,17 @@ extension Interpreter: StatementThrowingVisitor {
         // This makes the following possible
         // var a;
         // print a; // nil
-        environment.define(statement.name.lexeme, value)
+        environment.define(name: statement.name.lexeme, value: value)
     }
     
-    func visitBlock(_ block: Block) throws {
+    func visitClassStatement(_ statement: Class) throws {
+        // TODO: The two-stage variable binding process allows references to the class inside its own methods.
+        environment.define(name: statement.name.lexeme, value: nil)
+        let `class` = LoxClass(name: statement.name.lexeme)
+        try environment.assign(statement.name, `class`)
+    }
+    
+    func visitBlockStatement(_ block: Block) throws {
         try executeBlock(block.statements, Environment(enclosedBy: self.environment))
     }
     
@@ -57,7 +64,7 @@ extension Interpreter: StatementThrowingVisitor {
     
     func visitFunctionStatement(_ statement: FunctionStatement) throws {
         let function = LoxFunction(declaration: statement, closure: environment)
-        environment.define(statement.name.lexeme, function) // compile-time representation to runtime representation
+        environment.define(name: statement.name.lexeme, value: function) // compile-time representation to runtime representation
     }
     
     func visitReturnStatement(_ statement: ReturnStatement) throws {

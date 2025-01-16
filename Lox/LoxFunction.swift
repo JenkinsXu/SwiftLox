@@ -15,7 +15,7 @@ struct LoxFunction: LoxCallable, CustomStringConvertible {
     func call(interpreter: Interpreter, arguments: [Any?]) throws -> Any? {
         let environment = Environment(enclosedBy: closure)
         for (parameter, argument) in zip(declaration.parameters, arguments) {
-            environment.define(parameter.lexeme, argument)
+            environment.define(name: parameter.lexeme, value: argument)
         }
         
         do {

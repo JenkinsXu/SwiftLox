@@ -23,7 +23,7 @@ class Interpreter {
             }
         }
         
-        globals.define("clock", Clock())
+        globals.define(name: "clock", value: Clock())
         environment = globals
     }
     

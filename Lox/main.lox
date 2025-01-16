@@ -24,3 +24,17 @@ var a = "global";
   var a = "block";
   showA();
 }
+
+// Example 3
+// Fields are not explicitly listed in the class declaration.
+class Breakfast {
+    cook() {
+        print "Eggs a-fryin'!";
+    }
+    
+    serve() {
+        print "Enjoy your breakfast, " + who + ".";
+    }
+}
+
+print Breakfast; // "Breakfast".

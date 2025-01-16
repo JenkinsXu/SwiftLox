@@ -15,10 +15,12 @@
 ///
 /// // requires this distinction because
 /// // if (monday) var beverage = "espresso"; // invalid, confusing scope
-/// declaration    → funDecl
+/// declaration    → classDecl
+///                | funDecl
 ///                | varDecl ;
 ///                | statement ; // the "higer" precedence statements, allowed in more places (fallthrough)
 ///
+/// classDecl      → "class" IDENTIFIER "{" function* "}" ;
 /// funDecl        → "fun" function ;
 /// function       → IDENTIFIER "(" parameters? ")" block ; // reused in class methods
 /// parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -51,7 +53,8 @@ protocol StatementVisitor {
     func visitPrintStatement(_ statement: PrintStatement)
     func visitFunctionStatement(_ statement: FunctionStatement)
     func visitVarStatement(_ statement: VarStatement)
-    func visitBlock(_ block: Block)
+    func visitBlockStatement(_ statement: Block)
+    func visitClassStatement(_ statement: Class)
     func visitIfStatement(_ statement: IfStatement)
     func visitWhileStatement(_ statement: WhileStatement)
     func visitReturnStatement(_ statement: ReturnStatement)
@@ -62,7 +65,8 @@ protocol StatementThrowingVisitor {
     func visitPrintStatement(_ statement: PrintStatement) throws
     func visitFunctionStatement(_ statement: FunctionStatement) throws
     func visitVarStatement(_ statement: VarStatement) throws
-    func visitBlock(_ block: Block) throws
+    func visitBlockStatement(_ statement: Block) throws
+    func visitClassStatement(_ statement: Class) throws
     func visitIfStatement(_ statement: IfStatement) throws
     func visitWhileStatement(_ statement: WhileStatement) throws
     func visitReturnStatement(_ statement: ReturnStatement) throws
@@ -72,11 +76,24 @@ struct Block: Statement {
     let statements: [Statement]
     
     func accept<V: StatementVisitor>(_ visitor: V) {
-        visitor.visitBlock(self)
+        visitor.visitBlockStatement(self)
     }
     
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
-        try visitor.visitBlock(self)
+        try visitor.visitBlockStatement(self)
+    }
+}
+
+struct Class: Statement {
+    let name: Token
+    let methods: [FunctionStatement]
+    
+    func accept<V: StatementVisitor>(_ visitor: V) {
+        visitor.visitClassStatement(self)
+    }
+    
+    func accept<V: StatementThrowingVisitor>(_ visitor: V) throws {
+        try visitor.visitClassStatement(self)
     }
 }
 
