@@ -146,6 +146,18 @@ extension Interpreter: ExpressionThrowingVisitor {
         throw RuntimeError(token: get.name, message: "Only instances have properties.")
     }
     
+    func visitSet(_ set: SetExpression) throws -> Any? {
+        let object = try evaluate(set.object)
+        
+        guard let instance = object as? LoxInstance else {
+            throw RuntimeError(token: set.name, message: "Only instances have fields.")
+        }
+        
+        let value = try evaluate(set.value)
+        instance.set(name: set.name, value: value)
+        return value
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {

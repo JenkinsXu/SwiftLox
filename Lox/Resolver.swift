@@ -109,6 +109,11 @@ extension Resolver: ExpressionVisitor {
         resolve(expression: get.object) // Since properties are looked up dynamically, they don't get resolved
     }
     
+    func visitSet(_ set: SetExpression) -> Void {
+        resolve(expression: set.value)
+        resolve(expression: set.object) // Since properties are looked up dynamically, they don't get resolved
+    }
+    
     func visitGrouping(_ grouping: Grouping) {
         resolve(expression: grouping.expression)
     }

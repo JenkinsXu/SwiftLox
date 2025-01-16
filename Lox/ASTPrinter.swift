@@ -56,4 +56,12 @@ struct ASTPrinter: ExpressionVisitor {
     func visitCall(_ call: Call) -> String {
         parenthesize("call \(call.callee)") // TODO: Include arguments.
     }
+    
+    func visitGet(_ get: Get) -> String {
+        parenthesize("get \(get.object).\(get.name)")
+    }
+    
+    func visitSet(_ set: SetExpression) -> String {
+        parenthesize("set \(set.object).\(set.name)", set.value)
+    }
 }

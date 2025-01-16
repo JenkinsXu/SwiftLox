@@ -42,3 +42,5 @@ print Breakfast; // "Breakfast".
 class Bagel {}
 var bagel = Bagel();
 print bagel;
+bagel.taste = "sweet";
+print bagel.taste;

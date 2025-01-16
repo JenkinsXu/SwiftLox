@@ -10,8 +10,8 @@
 /// # Expressions
 ///
 /// expression     → assignment ;
-/// assignment     → IDENTIFIER "=" assignment
-///                | equality ;
+/// assignment     → ( call "." )? IDENTIFIER "=" assignment
+///                | logic_or ;
 /// logical_or     → logical_and ( "or" logical_and )* ;
 /// logical_and    → equality ( "and" equality )* ;
 /// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -278,6 +278,8 @@ struct Parser {
             if let variable = expression as? Variable {
                 let name = variable.name // Convert r-value to l-value.
                 return Assign(name: name, value: value)
+            } else if let get = expression as? Get {
+                return SetExpression(object: get.object, name: get.name, value: value)
             }
             
             Lox.reportWithoutThrowing(.parsingFailure(equals, "Invalid assignment target.")) // No need to go into panic mode.
