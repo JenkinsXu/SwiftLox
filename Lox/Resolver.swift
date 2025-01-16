@@ -105,6 +105,10 @@ extension Resolver: ExpressionVisitor {
         }
     }
     
+    func visitGet(_ get: Get) {
+        resolve(expression: get.object) // Since properties are looked up dynamically, they don't get resolved
+    }
+    
     func visitGrouping(_ grouping: Grouping) {
         resolve(expression: grouping.expression)
     }

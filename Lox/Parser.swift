@@ -20,7 +20,7 @@
 /// factor         → unary ( ( "/" | "*" ) unary )* ;
 /// unary          → ( "!" | "-" ) unary
 ///                | call ;
-/// call           → primary ( "(" arguments? ")" )* ;
+/// call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 /// arguments      → expression ( "," expression )* ;
 /// primary        → NUMBER | STRING | "true" | "false" | "nil"
 ///                | "(" expression ")" | IDENTIFIER ;
@@ -375,6 +375,9 @@ struct Parser {
         while true {
             if match(.leftParen) {
                 expression = try finishCall(expression)
+            } else if match(.dot) {
+                let name = try consume(.identifier, messageIfFailed: "Expect property name after '.'.")
+                expression = Get(object: expression, name: name)
             } else {
                 break
             }

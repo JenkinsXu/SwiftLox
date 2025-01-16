@@ -35,6 +35,7 @@ protocol ExpressionVisitor { // For grouping functionalities together
     func visitAssign(_ assign: Assign) -> Output
     func visitLogical(_ logical: Logical) -> Output
     func visitCall(_ call: Call) -> Output
+    func visitGet(_ get: Get) -> Output
 }
 
 protocol ExpressionThrowingVisitor {
@@ -47,6 +48,7 @@ protocol ExpressionThrowingVisitor {
     func visitAssign(_ assign: Assign) throws -> Output
     func visitLogical(_ logical: Logical) throws -> Output
     func visitCall(_ call: Call) throws -> Output
+    func visitGet(_ get: Get) throws -> Output
 }
 
 class Assign: Expression {
@@ -191,5 +193,23 @@ class Call: Expression {
     
     override func accept<V: ExpressionThrowingVisitor>(_ visitor: V) throws -> V.Output {
         try visitor.visitCall(self)
+    }
+}
+
+class Get: Expression {
+    let object: Expression
+    let name: Token
+    
+    init(object: Expression, name: Token) {
+        self.object = object
+        self.name = name
+    }
+    
+    override func accept<V>(_ visitor: V) -> V.Output where V : ExpressionVisitor {
+        visitor.visitGet(self)
+    }
+    
+    override func accept<V>(_ visitor: V) throws -> V.Output where V : ExpressionThrowingVisitor {
+        try visitor.visitGet(self)
     }
 }

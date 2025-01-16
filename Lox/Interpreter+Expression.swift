@@ -137,6 +137,15 @@ extension Interpreter: ExpressionThrowingVisitor {
         return try function.call(interpreter: self, arguments: arguments)
     }
     
+    func visitGet(_ get: Get) throws -> Any? {
+        let object = try evaluate(get.object)
+        if let instance = object as? LoxInstance {
+            return try instance.get(name: get.name)
+        }
+        
+        throw RuntimeError(token: get.name, message: "Only instances have properties.")
+    }
+    
     // MARK: Helpers
     
     private func numberOperand(operator: Token, value: Any?) throws -> Double {
