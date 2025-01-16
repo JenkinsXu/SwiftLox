@@ -44,6 +44,7 @@ class Resolver {
     enum FunctionType {
         case none
         case function
+        case initializer // To prevent `init() { return "something else" }`.
         case method
     }
     
@@ -156,7 +157,7 @@ extension Resolver: StatementVisitor {
         beginScope()
         scopes[scopes.count - 1]["this"] = true // Declare before resolution.
         for method in `class`.methods {
-            resolveFunction(method, ofType: .method)
+            resolveFunction(method, ofType: method.name.lexeme == "init" ? .initializer : .method)
         }
         endScope()
         
@@ -251,6 +252,11 @@ extension Resolver: StatementVisitor {
         }
         
         if let value = statement.value {
+            // We only prevent returning in initializer when there is a value. `return;` is still allowed.
+            if currentFunctionType == .initializer {
+                Lox.reportWithoutThrowing(.resolutionFailure(statement.keyword, "Can't return a value from an initializer."))
+            }
+            
             resolve(expression: value)
         }
     }

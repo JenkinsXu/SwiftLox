@@ -16,9 +16,21 @@ struct LoxClass: CustomStringConvertible, LoxCallable {
     var description: String { name }
     
     // MARK: LoxCallable
-    var arity: Int { 0 }
+    var arity: Int {
+        if let initializer = findMethod(withName: "init") {
+            return initializer.arity
+        } else {
+            return 0
+        }
+    }
+    
     func call(interpreter: Interpreter, arguments: [Any?]) throws -> Any? {
-        return LoxInstance(class: self)
+        let instance = LoxInstance(class: self)
+        if let initializer = findMethod(withName: "init") {
+            try initializer.bind(instance).call(interpreter: interpreter, arguments: arguments)
+        }
+        
+        return instance
     }
     
     func findMethod(withName name: String) -> LoxFunction? {

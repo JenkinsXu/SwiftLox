@@ -32,7 +32,7 @@ extension Interpreter: StatementThrowingVisitor {
         environment.define(name: statement.name.lexeme, value: nil)
         
         let methods = Dictionary(uniqueKeysWithValues: statement.methods.map { method in
-            (method.name.lexeme, LoxFunction(declaration: method, closure: environment))
+            (method.name.lexeme, LoxFunction(declaration: method, closure: environment, isInitializer: method.name.lexeme == "init"))
         })
         
         let `class` = LoxClass(name: statement.name.lexeme, methods: methods)
@@ -68,7 +68,7 @@ extension Interpreter: StatementThrowingVisitor {
     }
     
     func visitFunctionStatement(_ statement: FunctionStatement) throws {
-        let function = LoxFunction(declaration: statement, closure: environment)
+        let function = LoxFunction(declaration: statement, closure: environment, isInitializer: false)
         environment.define(name: statement.name.lexeme, value: function) // compile-time representation to runtime representation
     }
     
