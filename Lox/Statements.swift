@@ -7,42 +7,6 @@
 
 /// There is no place in the grammar where both an expression and a statement are allowed.
 /// Since the two syntaxes are disjoint, we don't need a single base class that they all inherit from.
-///
-/// ```
-/// #Statements
-///
-/// program        → declaration* EOF ;
-///
-/// // requires this distinction because
-/// // if (monday) var beverage = "espresso"; // invalid, confusing scope
-/// declaration    → classDecl
-///                | funDecl
-///                | varDecl ;
-///                | statement ; // the "higer" precedence statements, allowed in more places (fallthrough)
-///
-/// classDecl      → "class" IDENTIFIER "{" function* "}" ;
-/// funDecl        → "fun" function ;
-/// function       → IDENTIFIER "(" parameters? ")" block ; // reused in class methods
-/// parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
-///
-/// varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
-///
-/// statement      → exprStmt
-///                | forStmt
-///                | ifStmt
-///                | printStmt
-///                | returnStmt
-///                | whileStmt
-///                | block ;
-///
-/// forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
-/// returnStmt     → "return" expression? ";" ; // default to nil for void functions
-/// whileStmt      → "while" "(" expression ")" statement ;
-/// ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
-/// block          → "{" declaration* "}" ;
-/// exprStmt       → expression ";" ;
-/// printStmt      → "print" expression ";" ;
-/// ```
 protocol Statement { // Commonly written as "Stmt"
     func accept<V: StatementVisitor>(_ visitor: V)
     func accept<V: StatementThrowingVisitor>(_ visitor: V) throws
