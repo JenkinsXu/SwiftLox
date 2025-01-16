@@ -18,9 +18,12 @@ class LoxInstance: CustomStringConvertible {
         self.class = `class`
     }
     
+    /// When accessing a property, you might get a field—a bit of state stored on the instance—or you could hit a method defined on the instance’s class.
     func get(name: Token) throws -> Any {
         if let field = fields[name.lexeme] {
             return field
+        } else if let method = `class`.findMethod(withName: name.lexeme) {
+            return method
         } else {
             throw Interpreter.RuntimeError(token: name, message: "Undefined property \(name.lexeme).")
         }

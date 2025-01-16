@@ -44,3 +44,42 @@ var bagel = Bagel();
 print bagel;
 bagel.taste = "sweet";
 print bagel.taste;
+
+// Example 4 (Methods on Classes)
+class Bacon {
+  eat() {
+    print "Crunch crunch crunch!";
+  }
+}
+
+Bacon().eat(); // Prints "Crunch crunch crunch!".
+
+class Box {}
+
+fun notMethod(argument) {
+  print "called function with " + argument;
+}
+
+var box = Box();
+box.function = notMethod;
+box.function("argument");
+
+var method = box.function;
+method("argument");
+
+// Example 5 (Bound Methods)
+class Person {
+  sayName() {
+    print this.name;
+  }
+}
+
+var jane = Person();
+jane.name = "Jane";
+
+var bill = Person();
+bill.name = "Bill";
+
+bill.sayName = jane.sayName;
+bill.sayName(); // ?
+

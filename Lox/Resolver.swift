@@ -44,6 +44,7 @@ class Resolver {
     enum FunctionType {
         case none
         case function
+        case method
     }
     
     init(interpreter: Interpreter) {
@@ -133,6 +134,11 @@ extension Resolver: ExpressionVisitor {
 extension Resolver: StatementVisitor {
     func visitClassStatement(_ class: Class) {
         declare(name: `class`.name)
+        
+        for method in `class`.methods {
+            resolveFunction(method, ofType: .method)
+        }
+        
         define(name: `class`.name)
     }
     
@@ -185,7 +191,7 @@ extension Resolver: StatementVisitor {
         resolveFunction(statement, ofType: .function)
     }
     
-    /// `type` is used to prevent top-level return statements.
+    /// `type` is used to prevent top-level return statements. See `visitReturnStatement(_:)` for details.
     private func resolveFunction(_ statement: FunctionStatement, ofType type: FunctionType) {
         let enclosingFunctionType = currentFunctionType
         currentFunctionType = type

@@ -30,7 +30,12 @@ extension Interpreter: StatementThrowingVisitor {
     func visitClassStatement(_ statement: Class) throws {
         // TODO: The two-stage variable binding process allows references to the class inside its own methods.
         environment.define(name: statement.name.lexeme, value: nil)
-        let `class` = LoxClass(name: statement.name.lexeme)
+        
+        let methods = Dictionary(uniqueKeysWithValues: statement.methods.map { method in
+            (method.name.lexeme, LoxFunction(declaration: method, closure: environment))
+        })
+        
+        let `class` = LoxClass(name: statement.name.lexeme, methods: methods)
         try environment.assign(statement.name, `class`)
     }
     
