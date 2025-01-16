@@ -42,6 +42,6 @@ class LoxClass: CustomStringConvertible, LoxCallable {
     }
     
     func findMethod(withName name: String) -> LoxFunction? {
-        methods[name]
+        methods[name] ?? superclass?.findMethod(withName: name)
     }
 }
